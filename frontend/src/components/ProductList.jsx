@@ -6,19 +6,32 @@ import { cartAPI } from '../services/cartService';
 
 const ProductList = () => {
   const [products, setProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState('All');
   const [wishlist, setWishlist] = useState([]);
   const scrollRef = useRef(null);
   const navigate = useNavigate();
+
+  const categories = ['All', 'Laptops', 'Desktops', 'Accessories', 'Components', 'Peripherals', 'Gaming'];
 
   useEffect(() => {
     axios.get('http://localhost:8080/api/product/all')
       .then((response) => {
         setProducts(response.data);
+        setFilteredProducts(response.data);
       })
       .catch((error) => {
         console.error('Error fetching products:', error);
       });
   }, []);
+
+  useEffect(() => {
+    if (selectedCategory === 'All') {
+      setFilteredProducts(products);
+    } else {
+      setFilteredProducts(products.filter(product => product.category === selectedCategory));
+    }
+  }, [selectedCategory, products]);
 
   const toggleWishlist = (productId) => {
     setWishlist(prev => 
@@ -69,7 +82,31 @@ const ProductList = () => {
           </p>
         </div>
         <div className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
-          <span className="font-semibold text-indigo-600">{products.length}</span> Products Available
+          <span className="font-semibold text-indigo-600">{filteredProducts.length}</span> Products Available
+        </div>
+      </div>
+
+      {/* Category Filter */}
+      <div className="mb-6 sm:mb-8">
+        <div className="flex flex-wrap gap-2 sm:gap-3">
+          {categories.map((category) => (
+            <button
+              key={category}
+              onClick={() => setSelectedCategory(category)}
+              className={`px-4 sm:px-6 py-2 sm:py-2.5 rounded-full font-semibold text-sm sm:text-base transition-all duration-300 shadow-md ${
+                selectedCategory === category
+                  ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white transform scale-105'
+                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-indigo-50 dark:hover:bg-gray-700'
+              }`}
+            >
+              {category}
+              {category !== 'All' && (
+                <span className="ml-2 text-xs bg-white dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded-full">
+                  {products.filter(p => p.category === category).length}
+                </span>
+              )}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -98,7 +135,8 @@ const ProductList = () => {
         className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:gap-6 gap-4 lg:overflow-x-auto lg:scrollbar-hide px-2 sm:px-4 lg:px-6 py-4"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
-        {products.map((product) => (
+        {filteredProducts.length > 0 ? (
+          filteredProducts.map((product) => (
           <div
             key={product.id}
             className="w-full sm:w-auto lg:min-w-[280px] lg:max-w-[280px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-md hover:shadow-2xl lg:flex-shrink-0 transform transition-all duration-300 hover:-translate-y-2 relative group"
@@ -290,7 +328,18 @@ const ProductList = () => {
               </div>
             </div>
           </div>
-        ))}
+        ))
+        ) : (
+          <div className="col-span-full text-center py-12">
+            <Package size={64} className="mx-auto text-gray-400 mb-4" />
+            <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">
+              No products found in {selectedCategory}
+            </h3>
+            <p className="text-gray-500 dark:text-gray-400">
+              Try selecting a different category
+            </p>
+          </div>
+        )}
       </div>
 
       {/* View All Button */}

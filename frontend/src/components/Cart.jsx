@@ -116,17 +116,19 @@ const Cart = () => {
     
     selectedCartItems.forEach(item => {
       // Check if product has free shipping
-      const isFreeShipping = item.freeShipping || false;
+      const isFreeShipping = item.freeShipping === true;
       
       if (!isFreeShipping) {
-        // Use product's shipping cost or default to 250
-        const itemShippingCost = item.shippingCost || 250;
+        // Use product's shipping cost (convert to number) or default to 250
+        const itemShippingCost = Number(item.shippingCost) || 250;
         shipping += itemShippingCost;
       }
     });
     
-    // Apply free shipping if subtotal >= 50000
-    if (subtotal >= 50000) {
+    // Optional: Apply free shipping if subtotal >= 500000 (Rs. 500,000)
+    // You can remove this section if you don't want a free shipping threshold
+    const FREE_SHIPPING_THRESHOLD = 500000;
+    if (subtotal >= FREE_SHIPPING_THRESHOLD) {
       shipping = 0;
     }
     
@@ -371,9 +373,9 @@ const Cart = () => {
                       </span>
                     </div>
 
-                    {selectedTotals.subtotal > 0 && selectedTotals.subtotal < 50000 && (
+                    {selectedTotals.subtotal > 0 && selectedTotals.subtotal < 500000 && (
                       <div className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 bg-blue-50 dark:bg-blue-900/20 p-2 sm:p-3 rounded-lg">
-                        Add Rs. {(50000 - selectedTotals.subtotal).toLocaleString()} more for FREE shipping!
+                        Add Rs. {(500000 - selectedTotals.subtotal).toLocaleString()} more for FREE shipping!
                       </div>
                     )}
 

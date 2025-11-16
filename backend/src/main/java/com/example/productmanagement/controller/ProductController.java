@@ -1,22 +1,34 @@
 package com.example.productmanagement.controller;
 
-import com.example.productmanagement.model.Product;
-import com.example.productmanagement.repository.ProductRepository;
-import com.example.productmanagement.service.ProductService;
-import com.example.productmanagement.service.FileStorageService;
-import com.example.productmanagement.dto.ProductDTO;
-import jakarta.validation.Valid;
+import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
+
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import java.io.IOException;
-import java.util.List;
-import java.util.Optional;
+
+import com.example.productmanagement.dto.ProductDTO;
+import com.example.productmanagement.model.Product;
+import com.example.productmanagement.repository.ProductRepository;
+import com.example.productmanagement.service.FileStorageService;
+import com.example.productmanagement.service.ProductService;
+
+import jakarta.validation.Valid;
 
 
 @CrossOrigin(origins = "http://localhost:5173,http://localhost:5174")
@@ -178,7 +190,8 @@ public class ProductController {
         return ResponseEntity.noContent().build();
     }
 
-    // Image handling endpoints
+    // Image handling endpoints - DEPRECATED (using file-based storage now)
+    /*
     @PostMapping("/{id}/image")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Product> uploadProductImage(
@@ -194,6 +207,7 @@ public class ProductController {
 
         return ResponseEntity.ok(updatedProduct);
     }
+    */
 
     @PostMapping(value = "/with-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('ADMIN')")
@@ -275,6 +289,8 @@ public class ProductController {
         return new ResponseEntity<>(product, HttpStatus.CREATED);
     }
 
+    // DEPRECATED: Using file-based storage now, images served via /uploads/** endpoint
+    /*
     @GetMapping("/{id}/image")
     public ResponseEntity<byte[]> getProductImage(@PathVariable Integer id) {
         Product product = productService.getProductById(id);
@@ -288,6 +304,7 @@ public class ProductController {
                 .contentType(MediaType.parseMediaType(product.getImageType()))
                 .body(product.getImageData());
     }
+    */
 
     @GetMapping("/search")
     public List<Product> searchByBrand(@RequestParam String brand) {
