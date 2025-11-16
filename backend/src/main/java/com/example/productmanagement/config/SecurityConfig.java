@@ -39,8 +39,9 @@ public class SecurityConfig {
                     .requestMatchers("/api/user/register").permitAll()
                     .requestMatchers("/api/product/all", "/api/product/{id}", "/api/product/search").permitAll()
                     .requestMatchers("/api/hero/active").permitAll() // Public access to active hero images
+                    .requestMatchers("/uploads/**").permitAll() // Allow public access to uploaded images
                     // Admin only endpoints
-                    .requestMatchers("/api/product/create", "/api/product/update/**", "/api/product/delete/**").hasRole("ADMIN")
+                    .requestMatchers("/api/product/create", "/api/product/update-with-image/**", "/api/product/delete/**").hasRole("ADMIN")
                     .requestMatchers("/api/user/all", "/api/user/delete/**").hasRole("ADMIN")
                     .requestMatchers("/api/hero/**").hasRole("ADMIN") // Admin only for hero management
                     // All other requests need authentication

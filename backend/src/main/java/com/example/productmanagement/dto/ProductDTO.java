@@ -43,9 +43,14 @@ public class ProductDTO {
     @Min(value = 0, message = "Stock quantity cannot be negative")
     private Integer stockQuantity;
 
+    // Image fields (file-based storage)
+    private String imagePath;  // Main image file path (e.g., "uploads/abc123.jpg")
+    private String imageUrl;   // Full URL to access the image (e.g., "http://localhost:8080/uploads/abc123.jpg")
+    
+    // Legacy fields for backward compatibility
     private String imageName;
-
     private String imageBase64;
+    private String imageType;
 
     // ========== Industrial-Level E-commerce Fields ==========
     

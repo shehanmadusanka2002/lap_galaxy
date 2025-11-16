@@ -94,7 +94,7 @@ const Hero = () => {
   const currentHero = heroImages[currentSlide];
 
   return (
-    <div className="relative w-full h-[500px] md:h-[600px] overflow-hidden bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900">
+    <div className="relative w-full h-[400px] sm:h-[500px] md:h-[600px] overflow-hidden bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900">
       {/* Background Image with Overlay */}
       <div className="absolute inset-0">
         <img
@@ -110,11 +110,11 @@ const Hero = () => {
 
       {/* Content */}
       <div className="relative z-10 h-full flex items-center">
-        <div className="max-w-7xl mx-auto px-6 md:px-12 w-full">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 w-full">
           <div className="max-w-2xl">
             {/* Title with Animation */}
             <h1 
-              className={`text-4xl md:text-6xl lg:text-7xl font-extrabold text-white mb-6 leading-tight transition-all duration-500 ${
+              className={`text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-extrabold text-white mb-4 sm:mb-6 leading-tight transition-all duration-500 ${
                 fade ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
               }`}
             >
@@ -124,7 +124,7 @@ const Hero = () => {
             {/* Description */}
             {currentHero.description && (
               <p 
-                className={`text-lg md:text-xl text-gray-200 mb-8 leading-relaxed transition-all duration-500 delay-100 ${
+                className={`text-base sm:text-lg md:text-xl text-gray-200 mb-6 sm:mb-8 leading-relaxed transition-all duration-500 delay-100 ${
                   fade ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
                 }`}
               >
@@ -134,22 +134,22 @@ const Hero = () => {
 
             {/* CTA Buttons */}
             <div 
-              className={`flex flex-wrap gap-4 transition-all duration-500 delay-200 ${
+              className={`flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 transition-all duration-500 delay-200 ${
                 fade ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
               }`}
             >
               {currentHero.buttonText && currentHero.buttonLink && (
                 <button
                   onClick={() => navigate(currentHero.buttonLink)}
-                  className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-8 py-4 rounded-lg font-bold text-lg shadow-2xl hover:shadow-indigo-500/50 transition-all duration-300 transform hover:scale-105 flex items-center gap-2"
+                  className="w-full sm:w-auto bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-bold text-base sm:text-lg shadow-2xl hover:shadow-indigo-500/50 transition-all duration-300 transform hover:scale-105 flex items-center justify-center gap-2"
                 >
-                  <ShoppingBag size={24} />
+                  <ShoppingBag size={20} className="sm:w-6 sm:h-6" />
                   {currentHero.buttonText}
                 </button>
               )}
               <button
                 onClick={() => navigate('/products')}
-                className="bg-white/20 backdrop-blur-sm border-2 border-white/50 hover:bg-white/30 text-white px-8 py-4 rounded-lg font-bold text-lg shadow-2xl transition-all duration-300 transform hover:scale-105"
+                className="w-full sm:w-auto bg-white/20 backdrop-blur-sm border-2 border-white/50 hover:bg-white/30 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-bold text-base sm:text-lg shadow-2xl transition-all duration-300 transform hover:scale-105"
               >
                 Browse Products
               </button>
@@ -178,15 +178,15 @@ const Hero = () => {
 
       {/* Slide Indicators */}
       {heroImages.length > 1 && (
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-3">
+        <div className="absolute bottom-4 sm:bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-2 sm:gap-3">
           {heroImages.map((_, index) => (
             <button
               key={index}
               onClick={() => goToSlide(index)}
               className={`transition-all duration-300 rounded-full ${
                 index === currentSlide
-                  ? "w-12 h-3 bg-white"
-                  : "w-3 h-3 bg-white/50 hover:bg-white/75"
+                  ? "w-8 sm:w-12 h-2 sm:h-3 bg-white"
+                  : "w-2 sm:w-3 h-2 sm:h-3 bg-white/50 hover:bg-white/75"
               }`}
               aria-label={`Go to slide ${index + 1}`}
             />

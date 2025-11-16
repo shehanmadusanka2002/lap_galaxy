@@ -8,6 +8,7 @@ import {
 import { useNavigate, Link } from "react-router-dom";
 import DarkMode from "./DarkMode";
 import { isAuthenticated, getCurrentUser, logout, isAdmin } from "../services/api";
+import { cartAPI } from "../services/cartService";
 
 const NavBar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -44,6 +45,39 @@ const NavBar = () => {
     { name: "Best Sellers", icon: TrendingUp, path: "/best-sellers" },
     { name: "Offers", icon: Gift, path: "/offers" },
   ];
+
+  // Fetch cart count
+  const fetchCartCount = async () => {
+    try {
+      const cartData = await cartAPI.getCart();
+      if (cartData && cartData.items) {
+        const totalItems = cartData.items.reduce((sum, item) => sum + item.quantity, 0);
+        setCartCount(totalItems);
+      }
+    } catch (error) {
+      console.error('Error fetching cart count:', error);
+      setCartCount(0);
+    }
+  };
+
+  useEffect(() => {
+    // Fetch cart count on mount and when user logs in
+    fetchCartCount();
+
+    // Listen for cart updates
+    const handleCartUpdate = () => {
+      fetchCartCount();
+    };
+    window.addEventListener('cartUpdated', handleCartUpdate);
+
+    // Set up interval to refresh cart count every 30 seconds
+    const interval = setInterval(fetchCartCount, 30000);
+
+    return () => {
+      window.removeEventListener('cartUpdated', handleCartUpdate);
+      clearInterval(interval);
+    };
+  }, [isLoggedIn]);
 
   useEffect(() => {
     // Close dropdowns when clicking outside
@@ -143,7 +177,7 @@ const NavBar = () => {
 
       {/* Main Navigation */}
       <header className={`w-full bg-white dark:bg-gray-900 sticky top-0 z-50 transition-all duration-300 ${scrolled ? 'shadow-lg' : 'shadow-md'}`}>
-        <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <nav className="w-full mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
             {/* Logo */}
             <Link to="/" className="flex items-center space-x-2">

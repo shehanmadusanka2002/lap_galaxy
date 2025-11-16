@@ -11,11 +11,13 @@ import java.util.stream.Collectors;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.productmanagement.dto.ProductDTO;
 import com.example.productmanagement.exception.ResourceNotFoundException;
 import com.example.productmanagement.model.Product;
+import com.example.productmanagement.repository.CartItemRepository;
 import com.example.productmanagement.repository.ProductRepository;
 
 
@@ -24,6 +26,9 @@ public class ProductService {
 
     @Autowired
     private ProductRepository productRepository;
+    
+    @Autowired
+    private CartItemRepository cartItemRepository;
     
     @Autowired
     private ModelMapper modelMapper;
@@ -55,7 +60,18 @@ public class ProductService {
         product.setName(productDetails.getName());
         product.setDescription(productDetails.getDescription());
         product.setBrand(productDetails.getBrand());
-        product.setPrice(productDetails.getPrice());
+        
+        // Handle price calculation with discount
+        if (productDetails.getOriginalPrice() != null && productDetails.getDiscountPercentage() != null && productDetails.getDiscountPercentage() > 0) {
+            BigDecimal discount = productDetails.getOriginalPrice()
+                    .multiply(new BigDecimal(productDetails.getDiscountPercentage()))
+                    .divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
+            BigDecimal discountedPrice = productDetails.getOriginalPrice().subtract(discount);
+            product.setPrice(discountedPrice);
+        } else {
+            product.setPrice(productDetails.getPrice());
+        }
+        
         product.setCategory(productDetails.getCategory());
         product.setReleaseDate(productDetails.getReleaseDate());
         product.setProductAvailable(productDetails.isProductAvailable());
@@ -66,9 +82,64 @@ public class ProductService {
         return productRepository.save(product);
     }
 
+    @Transactional
     public void deleteProduct(Integer id) {
         Product product = getProductById(id);
+        
+        // First, delete all cart items that reference this product
+        // This prevents foreign key constraint violations
+        try {
+            cartItemRepository.deleteByProductId(id);
+        } catch (Exception e) {
+            // Log but continue - in case there are no cart items
+            System.out.println("No cart items to delete for product " + id);
+        }
+        
+        // Now delete the product
         productRepository.delete(product);
+    }
+
+    /**
+     * Create product with image file
+     */
+    public Product createProductWithImage(
+            String name, String description, String brand, String price,
+            String category, String releaseDateStr, boolean productAvailable,
+            int stockQuantity, MultipartFile imageFile) throws IOException {
+
+        Product product = new Product();
+        
+        // Basic fields
+        product.setName(name);
+        product.setDescription(description);
+        product.setBrand(brand);
+        // Price will be set later if needed, or from the price parameter
+        if (price != null && !price.isEmpty()) {
+            product.setPrice(new BigDecimal(price));
+        }
+        product.setCategory(category);
+        product.setProductAvailable(productAvailable);
+        product.setStockQuantity(stockQuantity);
+        
+        // Parse release date if provided
+        if (releaseDateStr != null && !releaseDateStr.isEmpty()) {
+            try {
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                Date releaseDate = dateFormat.parse(releaseDateStr);
+                product.setReleaseDate(releaseDate);
+            } catch (ParseException e) {
+                throw new IllegalArgumentException("Invalid date format. Use yyyy-MM-dd");
+            }
+        }
+        
+        // Handle image file - store to uploads folder
+        if (imageFile != null && !imageFile.isEmpty()) {
+            FileStorageService fileStorageService = new FileStorageService();
+            String imagePath = fileStorageService.storeFile(imageFile);
+            product.setImagePath(imagePath);
+        }
+
+        return productRepository.save(product);
     }
 
     // OLD METHOD - DEPRECATED: Use file-based storage instead
@@ -81,8 +152,13 @@ public class ProductService {
             // Use ModelMapper to map Product to ProductDTO
             ProductDTO dto = modelMapper.map(product, ProductDTO.class);
             
-            // Image paths are already in the DTO through mapping
-            // No need for Base64 conversion - frontend will load from file paths
+            // Set imageUrl if imagePath exists
+            if (product.getImagePath() != null && !product.getImagePath().isEmpty()) {
+                // Convert relative path to full URL
+                String imageUrl = "http://localhost:8080/" + product.getImagePath();
+                dto.setImageUrl(imageUrl);
+                dto.setImagePath(product.getImagePath());
+            }
             
             return dto;
         }).collect(Collectors.toList());
@@ -114,7 +190,7 @@ public class ProductService {
         product.setName(name);
         product.setDescription(description);
         product.setBrand(brand);
-        product.setPrice(new BigDecimal(price));
+        // Don't set price here yet - will be calculated below based on discount
         product.setCategory(category);
         product.setProductAvailable(productAvailable);
         product.setStockQuantity(stockQuantity);
@@ -141,6 +217,23 @@ public class ProductService {
             product.setOriginalPrice(new BigDecimal(originalPrice));
         }
         product.setDiscountPercentage(discountPercentage);
+        
+        // Auto-calculate discounted price if both original price and discount are provided
+        if (originalPrice != null && !originalPrice.isEmpty() && discountPercentage != null && discountPercentage > 0) {
+            BigDecimal originalPriceBD = new BigDecimal(originalPrice);
+            BigDecimal discount = originalPriceBD
+                    .multiply(new BigDecimal(discountPercentage))
+                    .divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
+            BigDecimal discountedPrice = originalPriceBD.subtract(discount);
+            product.setPrice(discountedPrice);
+        } else if (price != null && !price.isEmpty()) {
+            // Only use manual price if no discount calculation is needed
+            product.setPrice(new BigDecimal(price));
+        } else {
+            // Default to 0 if no price is provided
+            product.setPrice(BigDecimal.ZERO);
+        }
+        
         if (shippingCost != null && !shippingCost.isEmpty()) {
             product.setShippingCost(new BigDecimal(shippingCost));
         }
@@ -172,8 +265,12 @@ public class ProductService {
         product.setKeywords(keywords);
         product.setStatus(status != null ? status : "ACTIVE");
 
-        // DEPRECATED: Image storage changed to file-based system
-        // Use createProductWithFileImages() method instead for image uploads
+        // Handle image file - store to uploads folder
+        if (imageFile != null && !imageFile.isEmpty()) {
+            FileStorageService fileStorageService = new FileStorageService();
+            String imagePath = fileStorageService.storeFile(imageFile);
+            product.setImagePath(imagePath);
+        }
 
         return productRepository.save(product);
     }
@@ -278,6 +375,167 @@ public class ProductService {
         if (additionalPaths.length() > 0) {
             product.setAdditionalImagePaths(additionalPaths.toString());
         }
+
+        return productRepository.save(product);
+    }
+
+    /**
+     * Update existing product with all fields including image
+     */
+    @Transactional
+    public Product updateProductWithImage(
+            Integer id,
+            String name, String description, String brand, String price,
+            String category, String releaseDateStr, Boolean productAvailable,
+            Integer stockQuantity,
+            // Product Specifications
+            String sku, String model, String specifications, String warranty, String condition,
+            // Pricing
+            String originalPrice, Integer discountPercentage, String shippingCost, Boolean freeShipping,
+            // Product Details
+            String color, String size, String weight, String dimensions,
+            // Seller & Origin
+            String seller, String origin, String manufacturer,
+            // Rating & Reviews
+            String rating, Integer reviewCount,
+            // Stock Management
+            Integer minOrderQuantity, Integer maxOrderQuantity,
+            Boolean featured, Boolean bestSeller,
+            // Tags & Keywords
+            String tags, String keywords, String status,
+            // Image
+            MultipartFile imageFile,
+            FileStorageService fileStorageService) throws IOException, ParseException {
+
+        // Get existing product
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
+
+        // Update basic fields if provided
+        if (name != null && !name.isEmpty()) {
+            product.setName(name);
+        }
+        if (description != null) {
+            product.setDescription(description);
+        }
+        if (brand != null && !brand.isEmpty()) {
+            product.setBrand(brand);
+        }
+        if (price != null && !price.isEmpty()) {
+            product.setPrice(new BigDecimal(price));
+        }
+        if (category != null && !category.isEmpty()) {
+            product.setCategory(category);
+        }
+        
+        // Parse release date
+        if (releaseDateStr != null && !releaseDateStr.isEmpty()) {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            product.setReleaseDate(dateFormat.parse(releaseDateStr));
+        }
+        
+        if (productAvailable != null) {
+            product.setProductAvailable(productAvailable);
+        }
+        if (stockQuantity != null) {
+            product.setStockQuantity(stockQuantity);
+        }
+
+        // Update Product Specifications
+        if (sku != null) product.setSku(sku);
+        if (model != null) product.setModel(model);
+        if (specifications != null) product.setSpecifications(specifications);
+        if (warranty != null) product.setWarranty(warranty);
+        if (condition != null) product.setCondition(condition);
+        
+        // Update Pricing
+        if (originalPrice != null && !originalPrice.isEmpty()) {
+            product.setOriginalPrice(new BigDecimal(originalPrice));
+        }
+        if (discountPercentage != null) {
+            product.setDiscountPercentage(discountPercentage);
+        }
+        
+        // Auto-calculate discounted price if both original price and discount are provided
+        if (product.getOriginalPrice() != null && product.getDiscountPercentage() != null && product.getDiscountPercentage() > 0) {
+            BigDecimal discount = product.getOriginalPrice()
+                    .multiply(new BigDecimal(product.getDiscountPercentage()))
+                    .divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
+            BigDecimal discountedPrice = product.getOriginalPrice().subtract(discount);
+            product.setPrice(discountedPrice);
+        } else if (price != null && !price.isEmpty()) {
+            // Only update price manually if no discount calculation is needed
+            product.setPrice(new BigDecimal(price));
+        }
+        
+        if (shippingCost != null && !shippingCost.isEmpty()) {
+            product.setShippingCost(new BigDecimal(shippingCost));
+        }
+        if (freeShipping != null) {
+            product.setFreeShipping(freeShipping);
+        }
+        
+        // Update Product Details
+        if (color != null) product.setColor(color);
+        if (size != null) product.setSize(size);
+        if (weight != null && !weight.isEmpty()) {
+            product.setWeight(new BigDecimal(weight));
+        }
+        if (dimensions != null) product.setDimensions(dimensions);
+        
+        // Update Seller & Origin
+        if (seller != null) product.setSeller(seller);
+        if (origin != null) product.setOrigin(origin);
+        if (manufacturer != null) product.setManufacturer(manufacturer);
+        
+        // Update Rating & Reviews
+        if (rating != null && !rating.isEmpty()) {
+            product.setRating(new BigDecimal(rating));
+        }
+        if (reviewCount != null) {
+            product.setReviewCount(reviewCount);
+        }
+        
+        // Update Stock Management
+        if (minOrderQuantity != null) {
+            product.setMinOrderQuantity(minOrderQuantity);
+        }
+        if (maxOrderQuantity != null) {
+            product.setMaxOrderQuantity(maxOrderQuantity);
+        }
+        if (stockQuantity != null) {
+            product.setInStock(stockQuantity > 0);
+        }
+        if (featured != null) {
+            product.setFeatured(featured);
+        }
+        if (bestSeller != null) {
+            product.setBestSeller(bestSeller);
+        }
+        
+        // Update Tags & Keywords
+        if (tags != null) product.setTags(tags);
+        if (keywords != null) product.setKeywords(keywords);
+        if (status != null) product.setStatus(status);
+
+        // Handle image update
+        if (imageFile != null && !imageFile.isEmpty()) {
+            // Delete old image if exists
+            if (product.getImagePath() != null && !product.getImagePath().isEmpty()) {
+                try {
+                    fileStorageService.deleteFile(product.getImagePath());
+                } catch (Exception e) {
+                    System.out.println("Could not delete old image: " + e.getMessage());
+                }
+            }
+            
+            // Store new image
+            String imagePath = fileStorageService.storeFile(imageFile);
+            product.setImagePath(imagePath);
+        }
+
+        // Update timestamp
+        product.setUpdatedAt(new Date());
 
         return productRepository.save(product);
     }

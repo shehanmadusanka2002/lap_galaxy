@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import { ArrowLeft, ArrowRight, Star, ShoppingCart, Eye, Heart, Truck, Award, TrendingUp, Package } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { cartAPI } from '../services/cartService';
 
 const ProductList = () => {
   const [products, setProducts] = useState([]);
@@ -26,6 +27,22 @@ const ProductList = () => {
         : [...prev, productId]
     );
   };
+
+  const handleAddToCart = async (productId, productName) => {
+    try {
+      await cartAPI.addToCart(productId, 1);
+      // Dispatch custom event to update cart count in navbar
+      window.dispatchEvent(new Event('cartUpdated'));
+      alert(`${productName} added to cart successfully! 🛒`);
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      if (error.response?.status === 401) {
+        alert('Please login to add items to cart');
+      } else {
+        alert('Failed to add item to cart. Please try again.');
+      }
+    }
+  };
   
 
   const scroll = (direction) => {
@@ -40,58 +57,62 @@ const ProductList = () => {
   };
 
   return (
-    <section className="max-w-7xl mx-auto px-4 py-12 relative">
+    <section className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 py-6 sm:py-8 lg:py-12 relative">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 sm:mb-8 gap-3">
         <div>
-          <h1 className="text-4xl font-extrabold text-gray-800 dark:text-white mb-2">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-800 dark:text-white mb-1 sm:mb-2">
             Explore Our Products
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
             Discover amazing deals on premium laptops
           </p>
         </div>
-        <div className="text-gray-600 dark:text-gray-400">
+        <div className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
           <span className="font-semibold text-indigo-600">{products.length}</span> Products Available
         </div>
       </div>
 
-      {/* Navigation Arrows */}
-      <div className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10">
+      {/* Navigation Arrows - Hidden on mobile */}
+      <div className="hidden md:block absolute left-0 top-1/2 transform -translate-y-1/2 z-10">
         <button
           onClick={() => scroll('left')}
-          className="bg-white dark:bg-gray-700 p-3 rounded-full shadow-lg hover:bg-indigo-600 hover:text-white transition-all duration-300"
+          className="bg-white dark:bg-gray-700 p-2 lg:p-3 rounded-full shadow-lg hover:bg-indigo-600 hover:text-white transition-all duration-300"
         >
-          <ArrowLeft size={24} />
+          <ArrowLeft size={20} className="lg:w-6 lg:h-6" />
         </button>
       </div>
 
-      <div className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10">
+      <div className="hidden md:block absolute right-0 top-1/2 transform -translate-y-1/2 z-10">
         <button
           onClick={() => scroll('right')}
-          className="bg-white dark:bg-gray-700 p-3 rounded-full shadow-lg hover:bg-indigo-600 hover:text-white transition-all duration-300"
+          className="bg-white dark:bg-gray-700 p-2 lg:p-3 rounded-full shadow-lg hover:bg-indigo-600 hover:text-white transition-all duration-300"
         >
-          <ArrowRight size={24} />
+          <ArrowRight size={20} className="lg:w-6 lg:h-6" />
         </button>
       </div>
 
-      {/* Product Cards - Daraz Style */}
+      {/* Product Cards - Responsive Grid/Scroll */}
       <div
         ref={scrollRef}
-        className="flex gap-6 overflow-x-auto scrollbar-hide px-6 py-4"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:gap-6 gap-4 lg:overflow-x-auto lg:scrollbar-hide px-2 sm:px-4 lg:px-6 py-4"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {products.map((product) => (
           <div
             key={product.id}
-            className="min-w-[280px] max-w-[280px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-md hover:shadow-2xl flex-shrink-0 transform transition-all duration-300 hover:-translate-y-2 relative group"
+            className="w-full sm:w-auto lg:min-w-[280px] lg:max-w-[280px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-md hover:shadow-2xl lg:flex-shrink-0 transform transition-all duration-300 hover:-translate-y-2 relative group"
           >
             {/* Image Container */}
             <div className="relative overflow-hidden rounded-t-xl">
               <img
-                src={`data:${product.imageType};base64,${product.imageBase64}`}
+                src={product.imageUrl || product.imagePath || `data:${product.imageType};base64,${product.imageBase64}` || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="280" height="224"%3E%3Crect fill="%23ddd" width="280" height="224"/%3E%3Ctext fill="%23999" font-family="sans-serif" font-size="18" dy="10.5" font-weight="bold" x="50%25" y="50%25" text-anchor="middle"%3ENo Image%3C/text%3E%3C/svg%3E'}
                 alt={product.name}
                 className="w-full h-56 object-cover group-hover:scale-110 transition-transform duration-500"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="280" height="224"%3E%3Crect fill="%23ddd" width="280" height="224"/%3E%3Ctext fill="%23999" font-family="sans-serif" font-size="18" dy="10.5" font-weight="bold" x="50%25" y="50%25" text-anchor="middle"%3ENo Image%3C/text%3E%3C/svg%3E';
+                }}
               />
               
               {/* Badges */}
@@ -260,6 +281,7 @@ const ProductList = () => {
                   View Details
                 </button>
                 <button 
+                  onClick={() => handleAddToCart(product.id, product.name)}
                   className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white p-2.5 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg"
                   title="Add to Cart"
                 >
@@ -272,8 +294,8 @@ const ProductList = () => {
       </div>
 
       {/* View All Button */}
-      <div className="flex justify-center mt-8">
-        <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-lg font-medium shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2">
+      <div className="flex justify-center mt-6 sm:mt-8 px-4">
+        <button className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white px-6 sm:px-8 py-3 rounded-lg font-medium shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2">
           View All Products
           <ArrowRight size={20} />
         </button>

@@ -40,28 +40,98 @@ const ProductList = () => {
   const handleEdit = (product) => {
     setEditingProduct(product);
     setUpdatedProduct({
-      name: product.name,
-      brand: product.brand,
-      category: product.category,
-      description: product.description,
-      price: product.price,
-      stockQuantity: product.stockQuantity,
-      productAvailable: product.productAvailable,
-      releaseDate: product.releaseDate
+      name: product.name || '',
+      brand: product.brand || '',
+      category: product.category || '',
+      description: product.description || '',
+      price: product.price || '',
+      stockQuantity: product.stockQuantity || 0,
+      productAvailable: product.productAvailable ?? true,
+      releaseDate: product.releaseDate || '',
+      // Specifications
+      sku: product.sku || '',
+      model: product.model || '',
+      specifications: product.specifications || '',
+      warranty: product.warranty || '',
+      condition: product.condition || 'NEW',
+      // Pricing
+      originalPrice: product.originalPrice || '',
+      discountPercentage: product.discountPercentage || 0,
+      shippingCost: product.shippingCost || '',
+      freeShipping: product.freeShipping ?? false,
+      // Details
+      color: product.color || '',
+      size: product.size || '',
+      weight: product.weight || '',
+      dimensions: product.dimensions || '',
+      // Seller & Origin
+      seller: product.seller || '',
+      origin: product.origin || '',
+      manufacturer: product.manufacturer || '',
+      // Rating & Reviews
+      rating: product.rating || '',
+      reviewCount: product.reviewCount || 0,
+      // Stock Management
+      minOrderQuantity: product.minOrderQuantity || 1,
+      maxOrderQuantity: product.maxOrderQuantity || '',
+      featured: product.featured ?? false,
+      bestSeller: product.bestSeller ?? false,
+      // Tags & Keywords
+      tags: product.tags || '',
+      keywords: product.keywords || '',
+      status: product.status || 'ACTIVE',
+      // Image
+      imageFile: null
     });
   };
 
   const handleUpdateChange = (e) => {
-    const { name, value } = e.target;
-    setUpdatedProduct(prev => ({
-      ...prev,
-      [name]: name === "productAvailable" ? value === "true" : value
-    }));
+    const { name, value, type, checked, files } = e.target;
+    
+    if (type === 'file') {
+      setUpdatedProduct(prev => ({
+        ...prev,
+        imageFile: files[0]
+      }));
+    } else if (type === 'checkbox') {
+      setUpdatedProduct(prev => ({
+        ...prev,
+        [name]: checked
+      }));
+    } else {
+      setUpdatedProduct(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
   };
 
   const handleUpdateSubmit = (e) => {
     e.preventDefault();
-    axios.put(`http://localhost:8080/api/product/${editingProduct.id}`, updatedProduct)
+    
+    // Create FormData for multipart/form-data request
+    const formData = new FormData();
+    
+    // Add all fields to FormData
+    Object.keys(updatedProduct).forEach(key => {
+      if (key === 'imageFile') {
+        if (updatedProduct.imageFile) {
+          formData.append('image', updatedProduct.imageFile); // Backend expects 'image' parameter
+        }
+      } else if (updatedProduct[key] !== null && updatedProduct[key] !== '' && updatedProduct[key] !== undefined) {
+        formData.append(key, updatedProduct[key]);
+      }
+    });
+
+    // Get token from localStorage
+    const token = localStorage.getItem('token');
+
+    axios.put(`http://localhost:8080/api/product/update-with-image/${editingProduct.id}`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        'Authorization': `Bearer ${token}`
+      },
+    })
       .then(() => {
         alert('Product updated successfully!');
         setEditingProduct(null);
@@ -69,7 +139,7 @@ const ProductList = () => {
       })
       .catch(error => {
         console.error('Error updating product:', error);
-        alert('Failed to update product.');
+        alert('Failed to update product: ' + (error.response?.data?.message || error.message));
       });
   };
 
@@ -136,11 +206,16 @@ const ProductList = () => {
             >
               {/* Product Image */}
               <div className="relative h-48 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
-                {product.imageBase64 ? (
+                {product.imageUrl || product.imagePath || product.imageBase64 ? (
                   <img
-                    src={`data:${product.imageType};base64,${product.imageBase64}`}
+                    src={product.imageUrl || product.imagePath || `data:${product.imageType};base64,${product.imageBase64}`}
                     alt={product.name}
                     className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.style.display = 'none';
+                      e.target.parentElement.innerHTML = '<div class="flex items-center justify-center h-full"><svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg></div>';
+                    }}
                   />
                 ) : (
                   <div className="flex items-center justify-center h-full">
@@ -310,11 +385,16 @@ const ProductList = () => {
               {products.map(product => (
                 <tr key={product.id} className="border-b hover:bg-gray-50 transition-colors">
                   <td className="p-3">
-                    {product.imageBase64 ? (
+                    {product.imageUrl || product.imagePath || product.imageBase64 ? (
                       <img
-                        src={`data:${product.imageType};base64,${product.imageBase64}`}
+                        src={product.imageUrl || product.imagePath || `data:${product.imageType};base64,${product.imageBase64}`}
                         alt={product.name}
                         className="w-16 h-16 object-cover rounded-lg"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.style.display = 'none';
+                          e.target.parentElement.innerHTML = '<div class="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg></div>';
+                        }}
                       />
                     ) : (
                       <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center">
@@ -434,11 +514,15 @@ const ProductList = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Left Column - Image */}
                 <div>
-                  {selectedProduct.imageBase64 ? (
+                  {selectedProduct.imageUrl || selectedProduct.imagePath || selectedProduct.imageBase64 ? (
                     <img
-                      src={`data:${selectedProduct.imageType};base64,${selectedProduct.imageBase64}`}
+                      src={selectedProduct.imageUrl || selectedProduct.imagePath || `data:${selectedProduct.imageType};base64,${selectedProduct.imageBase64}`}
                       alt={selectedProduct.name}
                       className="w-full h-auto rounded-lg shadow-lg"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = 'https://via.placeholder.com/400x400?text=No+Image';
+                      }}
                     />
                   ) : (
                     <div className="w-full h-64 bg-gray-200 rounded-lg flex items-center justify-center">
@@ -603,86 +687,524 @@ const ProductList = () => {
       )}
 
       {editingProduct && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-          <div className="bg-white p-6 rounded-lg shadow-md w-full max-w-md">
-            <h2 className="text-xl font-semibold mb-4">Edit Product</h2>
-            <form onSubmit={handleUpdateSubmit} className="space-y-4">
-              <input
-                type="text"
-                name="name"
-                value={updatedProduct.name}
-                onChange={handleUpdateChange}
-                className="w-full p-2 border rounded"
-                placeholder="Product Name"
-              />
-              <input
-                type="text"
-                name="brand"
-                value={updatedProduct.brand}
-                onChange={handleUpdateChange}
-                className="w-full p-2 border rounded"
-                placeholder="Brand"
-              />
-              <input
-                type="text"
-                name="category"
-                value={updatedProduct.category}
-                onChange={handleUpdateChange}
-                className="w-full p-2 border rounded"
-                placeholder="Category"
-              />
-              <textarea
-                name="description"
-                value={updatedProduct.description}
-                onChange={handleUpdateChange}
-                className="w-full p-2 border rounded"
-                placeholder="Description"
-              />
-              <input
-                type="number"
-                name="price"
-                value={updatedProduct.price}
-                onChange={handleUpdateChange}
-                className="w-full p-2 border rounded"
-                placeholder="Price"
-              />
-              <input
-                type="number"
-                name="stockQuantity"
-                value={updatedProduct.stockQuantity}
-                onChange={handleUpdateChange}
-                className="w-full p-2 border rounded"
-                placeholder="Stock Quantity"
-              />
-              <select
-                name="productAvailable"
-                value={updatedProduct.productAvailable}
-                onChange={handleUpdateChange}
-                className="w-full p-2 border rounded"
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-4 overflow-y-auto">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-5xl my-8">
+            <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6 rounded-t-xl flex justify-between items-center">
+              <h2 className="text-2xl font-bold">Edit Product</h2>
+              <button
+                onClick={() => setEditingProduct(null)}
+                className="text-white hover:text-gray-200 text-3xl font-bold leading-none"
               >
-                <option value="true">Available</option>
-                <option value="false">Out of Stock</option>
-              </select>
-              <input
-                type="date"
-                name="releaseDate"
-                value={updatedProduct.releaseDate?.slice(0, 10)}
-                onChange={handleUpdateChange}
-                className="w-full p-2 border rounded"
-              />
-              <div className="flex justify-end gap-3 pt-2">
+                ×
+              </button>
+            </div>
+            
+            <form onSubmit={handleUpdateSubmit} className="p-6 space-y-6 max-h-[calc(100vh-200px)] overflow-y-auto">
+              {/* Current Product Image */}
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h3 className="font-semibold text-gray-700 mb-3">Current Product Image</h3>
+                <div className="flex items-center gap-4">
+                  {editingProduct.imageUrl || editingProduct.imagePath ? (
+                    <img
+                      src={editingProduct.imageUrl || editingProduct.imagePath}
+                      alt={editingProduct.name}
+                      className="w-32 h-32 object-cover rounded-lg border-2 border-gray-300"
+                    />
+                  ) : (
+                    <div className="w-32 h-32 bg-gray-200 rounded-lg flex items-center justify-center">
+                      <Package size={48} className="text-gray-400" />
+                    </div>
+                  )}
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Upload New Image (Optional)
+                    </label>
+                    <input
+                      type="file"
+                      name="imageFile"
+                      accept="image/*"
+                      onChange={handleUpdateChange}
+                      className="w-full p-2 border border-gray-300 rounded-lg text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Leave empty to keep current image</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Basic Information */}
+              <div className="bg-white border-2 border-gray-200 rounded-lg p-4">
+                <h3 className="font-semibold text-lg text-gray-800 mb-4 flex items-center gap-2">
+                  <Package size={20} className="text-blue-600" />
+                  Basic Information
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Product Name *</label>
+                    <input
+                      type="text"
+                      name="name"
+                      value={updatedProduct.name}
+                      onChange={handleUpdateChange}
+                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Product Name"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Brand *</label>
+                    <input
+                      type="text"
+                      name="brand"
+                      value={updatedProduct.brand}
+                      onChange={handleUpdateChange}
+                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Brand"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
+                    <input
+                      type="text"
+                      name="category"
+                      value={updatedProduct.category}
+                      onChange={handleUpdateChange}
+                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Category"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">SKU</label>
+                    <input
+                      type="text"
+                      name="sku"
+                      value={updatedProduct.sku}
+                      onChange={handleUpdateChange}
+                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="SKU"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Model</label>
+                    <input
+                      type="text"
+                      name="model"
+                      value={updatedProduct.model}
+                      onChange={handleUpdateChange}
+                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Model"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Condition</label>
+                    <select
+                      name="condition"
+                      value={updatedProduct.condition}
+                      onChange={handleUpdateChange}
+                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="NEW">New</option>
+                      <option value="REFURBISHED">Refurbished</option>
+                      <option value="USED">Used</option>
+                    </select>
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <textarea
+                      name="description"
+                      value={updatedProduct.description}
+                      onChange={handleUpdateChange}
+                      rows="3"
+                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Product description"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Pricing */}
+              <div className="bg-white border-2 border-gray-200 rounded-lg p-4">
+                <h3 className="font-semibold text-lg text-gray-800 mb-4 flex items-center gap-2">
+                  <Tag size={20} className="text-green-600" />
+                  Pricing Information
+                </h3>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                  <p className="text-sm text-blue-800">
+                    <strong>Note:</strong> If you enter Original Price and Discount %, the Final Price will be auto-calculated. 
+                    Otherwise, enter the Final Price directly.
+                  </p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Original Price
+                      <span className="text-xs text-gray-500 ml-1">(before discount)</span>
+                    </label>
+                    <input
+                      type="number"
+                      name="originalPrice"
+                      value={updatedProduct.originalPrice}
+                      onChange={handleUpdateChange}
+                      step="0.01"
+                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="0.00"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Discount %
+                      <span className="text-xs text-gray-500 ml-1">(0-100)</span>
+                    </label>
+                    <input
+                      type="number"
+                      name="discountPercentage"
+                      value={updatedProduct.discountPercentage}
+                      onChange={handleUpdateChange}
+                      min="0"
+                      max="100"
+                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="0"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Final Price *
+                      <span className="text-xs text-gray-500 ml-1">(auto-calculated if discount set)</span>
+                    </label>
+                    <input
+                      type="number"
+                      name="price"
+                      value={updatedProduct.price}
+                      onChange={handleUpdateChange}
+                      step="0.01"
+                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="0.00"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Shipping Cost</label>
+                    <input
+                      type="number"
+                      name="shippingCost"
+                      value={updatedProduct.shippingCost}
+                      onChange={handleUpdateChange}
+                      step="0.01"
+                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="0.00"
+                    />
+                  </div>
+                </div>
+                <div className="mt-3">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="freeShipping"
+                      checked={updatedProduct.freeShipping}
+                      onChange={handleUpdateChange}
+                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    />
+                    <span className="text-sm font-medium text-gray-700">Free Shipping</span>
+                  </label>
+                </div>
+              </div>
+
+              {/* Stock Management */}
+              <div className="bg-white border-2 border-gray-200 rounded-lg p-4">
+                <h3 className="font-semibold text-lg text-gray-800 mb-4 flex items-center gap-2">
+                  <Package size={20} className="text-purple-600" />
+                  Stock & Availability
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Stock Quantity *</label>
+                    <input
+                      type="number"
+                      name="stockQuantity"
+                      value={updatedProduct.stockQuantity}
+                      onChange={handleUpdateChange}
+                      min="0"
+                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="0"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Min Order Qty</label>
+                    <input
+                      type="number"
+                      name="minOrderQuantity"
+                      value={updatedProduct.minOrderQuantity}
+                      onChange={handleUpdateChange}
+                      min="1"
+                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="1"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Max Order Qty</label>
+                    <input
+                      type="number"
+                      name="maxOrderQuantity"
+                      value={updatedProduct.maxOrderQuantity}
+                      onChange={handleUpdateChange}
+                      min="1"
+                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Unlimited"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="productAvailable"
+                      checked={updatedProduct.productAvailable}
+                      onChange={handleUpdateChange}
+                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    />
+                    <span className="text-sm font-medium text-gray-700">Product Available</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="featured"
+                      checked={updatedProduct.featured}
+                      onChange={handleUpdateChange}
+                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    />
+                    <span className="text-sm font-medium text-gray-700">Featured Product</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="bestSeller"
+                      checked={updatedProduct.bestSeller}
+                      onChange={handleUpdateChange}
+                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    />
+                    <span className="text-sm font-medium text-gray-700">Best Seller</span>
+                  </label>
+                </div>
+              </div>
+
+              {/* Product Details */}
+              <div className="bg-white border-2 border-gray-200 rounded-lg p-4">
+                <h3 className="font-semibold text-lg text-gray-800 mb-4">Product Details</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Color</label>
+                    <input
+                      type="text"
+                      name="color"
+                      value={updatedProduct.color}
+                      onChange={handleUpdateChange}
+                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Color"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Size</label>
+                    <input
+                      type="text"
+                      name="size"
+                      value={updatedProduct.size}
+                      onChange={handleUpdateChange}
+                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Size"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Weight</label>
+                    <input
+                      type="text"
+                      name="weight"
+                      value={updatedProduct.weight}
+                      onChange={handleUpdateChange}
+                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="e.g., 1.5 kg"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Dimensions</label>
+                    <input
+                      type="text"
+                      name="dimensions"
+                      value={updatedProduct.dimensions}
+                      onChange={handleUpdateChange}
+                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="e.g., 10x20x30 cm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Warranty</label>
+                    <input
+                      type="text"
+                      name="warranty"
+                      value={updatedProduct.warranty}
+                      onChange={handleUpdateChange}
+                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="e.g., 1 Year"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Release Date</label>
+                    <input
+                      type="date"
+                      name="releaseDate"
+                      value={updatedProduct.releaseDate?.slice(0, 10)}
+                      onChange={handleUpdateChange}
+                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Specifications</label>
+                    <textarea
+                      name="specifications"
+                      value={updatedProduct.specifications}
+                      onChange={handleUpdateChange}
+                      rows="2"
+                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Technical specifications"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Seller & Origin */}
+              <div className="bg-white border-2 border-gray-200 rounded-lg p-4">
+                <h3 className="font-semibold text-lg text-gray-800 mb-4">Seller & Origin</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Seller</label>
+                    <input
+                      type="text"
+                      name="seller"
+                      value={updatedProduct.seller}
+                      onChange={handleUpdateChange}
+                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Seller Name"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Origin</label>
+                    <input
+                      type="text"
+                      name="origin"
+                      value={updatedProduct.origin}
+                      onChange={handleUpdateChange}
+                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Country of Origin"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Manufacturer</label>
+                    <input
+                      type="text"
+                      name="manufacturer"
+                      value={updatedProduct.manufacturer}
+                      onChange={handleUpdateChange}
+                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Manufacturer"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Rating & Reviews */}
+              <div className="bg-white border-2 border-gray-200 rounded-lg p-4">
+                <h3 className="font-semibold text-lg text-gray-800 mb-4 flex items-center gap-2">
+                  <Star size={20} className="text-yellow-500" />
+                  Rating & Reviews
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Rating (0-5)</label>
+                    <input
+                      type="number"
+                      name="rating"
+                      value={updatedProduct.rating}
+                      onChange={handleUpdateChange}
+                      step="0.1"
+                      min="0"
+                      max="5"
+                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="0.0"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Review Count</label>
+                    <input
+                      type="number"
+                      name="reviewCount"
+                      value={updatedProduct.reviewCount}
+                      onChange={handleUpdateChange}
+                      min="0"
+                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="0"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Tags & Keywords */}
+              <div className="bg-white border-2 border-gray-200 rounded-lg p-4">
+                <h3 className="font-semibold text-lg text-gray-800 mb-4">Tags & Metadata</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Tags (comma-separated)</label>
+                    <input
+                      type="text"
+                      name="tags"
+                      value={updatedProduct.tags}
+                      onChange={handleUpdateChange}
+                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="gaming, laptop, high-performance"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Keywords</label>
+                    <input
+                      type="text"
+                      name="keywords"
+                      value={updatedProduct.keywords}
+                      onChange={handleUpdateChange}
+                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="SEO keywords"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                    <select
+                      name="status"
+                      value={updatedProduct.status}
+                      onChange={handleUpdateChange}
+                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="ACTIVE">Active</option>
+                      <option value="INACTIVE">Inactive</option>
+                      <option value="DISCONTINUED">Discontinued</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex justify-end gap-3 pt-4 border-t-2 border-gray-200">
                 <button
                   type="button"
                   onClick={() => setEditingProduct(null)}
-                  className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded"
+                  className="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2.5 rounded-lg font-medium transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded"
+                  className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-8 py-2.5 rounded-lg font-medium transition-all shadow-md hover:shadow-lg flex items-center gap-2"
                 >
-                  Save
+                  <Edit size={18} />
+                  Update Product
                 </button>
               </div>
             </form>

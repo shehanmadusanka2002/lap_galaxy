@@ -18,7 +18,7 @@ function ProductCreate() {
     // Advanced industrial fields
     sku: '',
     model: '',
-    specifications: '',
+    specifications: '• \n• \n• \n• \n• ',
     warranty: '',
     condition: 'NEW',
     originalPrice: '',
@@ -245,7 +245,7 @@ function ProductCreate() {
             {/* Price */}
             <div className="mb-4">
               <label className="block text-gray-700 mb-2 font-medium" htmlFor="price">
-                Price ($) *
+                Price (RS) *
               </label>
               <input
                 type="number"
@@ -406,17 +406,25 @@ function ProductCreate() {
                 
                 <div className="md:col-span-2">
                   <label className="block text-gray-700 mb-2 font-medium" htmlFor="specifications">
-                    Technical Specifications (JSON format)
+                    Technical Specifications
+                    <span className="text-sm text-gray-500 ml-2">(One spec per line, use bullet points)</span>
                   </label>
                   <textarea
                     id="specifications"
                     name="specifications"
                     value={formData.specifications}
                     onChange={handleInputChange}
-                    rows="2"
+                    rows="4"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder='{"ram":"32GB","storage":"1TB SSD","screen":"15.6 OLED"}'
+                    placeholder={`• Processor: Intel Core i7-13700H
+• RAM: 32GB DDR5
+• Storage: 1TB NVMe SSD
+• Display: 15.6" OLED 4K
+• Graphics: NVIDIA RTX 4060 8GB`}
                   ></textarea>
+                  <p className="text-xs text-gray-500 mt-1">
+                    💡 Tip: Start each line with • or - for bullet points
+                  </p>
                 </div>
                 
                 <div>
