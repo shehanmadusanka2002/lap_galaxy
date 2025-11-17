@@ -163,31 +163,31 @@ function Footer() {
               <h3 className="text-lg font-bold mb-4 text-white">Categories</h3>
               <ul className="space-y-2.5">
                 <li>
-                  <a href="/category/laptops" className="text-gray-300 hover:text-indigo-400 transition-colors flex items-center gap-2 group">
+                  <a href="/products?category=laptops" className="text-gray-300 hover:text-indigo-400 transition-colors flex items-center gap-2 group">
                     <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                     Laptops
                   </a>
                 </li>
                 <li>
-                  <a href="/category/gaming" className="text-gray-300 hover:text-indigo-400 transition-colors flex items-center gap-2 group">
+                  <a href="/products?category=gaming" className="text-gray-300 hover:text-indigo-400 transition-colors flex items-center gap-2 group">
                     <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                     Gaming Laptops
                   </a>
                 </li>
                 <li>
-                  <a href="/category/accessories" className="text-gray-300 hover:text-indigo-400 transition-colors flex items-center gap-2 group">
+                  <a href="/products?category=accessories" className="text-gray-300 hover:text-indigo-400 transition-colors flex items-center gap-2 group">
                     <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                     Accessories
                   </a>
                 </li>
                 <li>
-                  <a href="/category/components" className="text-gray-300 hover:text-indigo-400 transition-colors flex items-center gap-2 group">
+                  <a href="/products?category=components" className="text-gray-300 hover:text-indigo-400 transition-colors flex items-center gap-2 group">
                     <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                     Components
                   </a>
                 </li>
                 <li>
-                  <a href="/category/peripherals" className="text-gray-300 hover:text-indigo-400 transition-colors flex items-center gap-2 group">
+                  <a href="/products?category=peripherals" className="text-gray-300 hover:text-indigo-400 transition-colors flex items-center gap-2 group">
                     <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                     Peripherals
                   </a>

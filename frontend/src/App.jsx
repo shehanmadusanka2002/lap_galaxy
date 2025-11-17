@@ -13,6 +13,9 @@ import Checkout from './components/Checkout.jsx';
 import ResetPassword from './components/ResetPassword.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 import DebugAuth from './components/DebugAuth.jsx';
+import About from './components/About.jsx';
+import ContactUs from './components/ContactUs.jsx';
+import Blog from './components/Blog.jsx';
 
 
 
@@ -41,6 +44,9 @@ function App() {
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/debug-auth" element={<DebugAuth />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/contact" element={<ContactUs />} />
+        <Route path="/blog" element={<Blog />} />
       </Routes>
     </Router>
     

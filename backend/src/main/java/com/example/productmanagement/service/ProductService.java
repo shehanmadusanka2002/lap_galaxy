@@ -18,6 +18,7 @@ import com.example.productmanagement.dto.ProductDTO;
 import com.example.productmanagement.exception.ResourceNotFoundException;
 import com.example.productmanagement.model.Product;
 import com.example.productmanagement.repository.CartItemRepository;
+import com.example.productmanagement.repository.OrderItemRepository;
 import com.example.productmanagement.repository.ProductRepository;
 
 
@@ -29,6 +30,9 @@ public class ProductService {
     
     @Autowired
     private CartItemRepository cartItemRepository;
+    
+    @Autowired
+    private OrderItemRepository orderItemRepository;
     
     @Autowired
     private ModelMapper modelMapper;
@@ -93,6 +97,15 @@ public class ProductService {
         } catch (Exception e) {
             // Log but continue - in case there are no cart items
             System.out.println("No cart items to delete for product " + id);
+        }
+        
+        // Check if product is part of any orders
+        // Note: In a production system, you might want to prevent deletion
+        // of products that are in orders, or just mark them as inactive
+        try {
+            orderItemRepository.deleteByProductId(id);
+        } catch (Exception e) {
+            System.out.println("No order items to delete for product " + id);
         }
         
         // Now delete the product

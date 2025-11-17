@@ -25,14 +25,14 @@ const ProductList = () => {
 
   const handleDelete = (Id) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
-      axios.delete(`http://localhost:8080/api/product/${Id}`)
+      axios.delete(`http://localhost:8080/api/product/delete/${Id}`)
         .then(() => {
           alert('Product deleted successfully!');
           fetchProducts();
         })
         .catch(error => {
           console.error('Error deleting product:', error);
-          alert('Failed to delete the product.');
+          alert('Failed to delete the product. This product may be part of existing orders.');
         });
     }
   };
