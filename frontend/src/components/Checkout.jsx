@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import NavBar from './NavBar';
 import Footer from './Footer';
+import { orderAPI } from '../services/orderService';
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -79,18 +80,50 @@ const Checkout = () => {
   };
 
   const handlePlaceOrder = async () => {
-    setIsProcessing(true);
-    
-    // Simulate order processing
-    setTimeout(() => {
+    try {
+      setIsProcessing(true);
+
+      // Prepare order data
+      const orderData = {
+        items: selectedItems.map(item => ({
+          productId: item.productId,
+          quantity: item.quantity
+        })),
+        subtotal: subtotal,
+        shippingCost: shipping,
+        totalAmount: total,
+        paymentMethod: paymentInfo.paymentMethod.toUpperCase(),
+        shippingInfo: {
+          fullName: shippingInfo.fullName,
+          email: shippingInfo.email,
+          phone: shippingInfo.phone,
+          address: shippingInfo.address,
+          city: shippingInfo.city,
+          postalCode: shippingInfo.postalCode,
+          country: shippingInfo.country
+        }
+      };
+
+      // Create order via API
+      const createdOrder = await orderAPI.createOrder(orderData);
+      
       setIsProcessing(false);
       setCurrentStep(4); // Success step
       
-      // Clear cart after successful order (you can implement this)
+      // Redirect to home after 3 seconds
       setTimeout(() => {
-        navigate('/');
+        navigate('/', { 
+          state: { 
+            message: `Order placed successfully! Order Number: ${createdOrder.orderNumber}` 
+          }
+        });
       }, 3000);
-    }, 2000);
+      
+    } catch (error) {
+      console.error('Error placing order:', error);
+      setIsProcessing(false);
+      alert('Failed to place order. Please try again.');
+    }
   };
 
   if (!selectedItems || selectedItems.length === 0) {

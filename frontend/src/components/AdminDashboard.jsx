@@ -5,7 +5,7 @@ import {
 } from 'recharts';
 import {
   Bell, Menu, X, Home, PieChart, Users, Settings,
-  HelpCircle, LogOut, Search, ChevronDown, Shield
+  HelpCircle, LogOut, Search, ChevronDown, Shield, Package
 } from 'lucide-react';
 import { isAdmin, logout, getCurrentUser } from '../services/api';
 import { useNavigate } from 'react-router-dom';
@@ -13,6 +13,7 @@ import ProductsCreate from './ProductsCreate';
 import UserTable from './UserTable';
 import ProductTable from './ProductTable';
 import HeroManagement from './HeroManagement';
+import OrderManagement from './OrderManagement';
 
 
 // 🔹 Sample Monthly Laptop Sales Data
@@ -125,6 +126,14 @@ export default function AdminDashboard() {
 
           <div
             className="px-4 py-3 flex items-center gap-3 text-indigo-200 rounded-lg hover:bg-red-300 cursor-pointer hover:text-black"
+            onClick={() => setActiveMenu('orders')}
+          >
+            <Package size={20} />
+            {sidebarOpen && <span>Orders</span>}
+          </div>
+
+          <div
+            className="px-4 py-3 flex items-center gap-3 text-indigo-200 rounded-lg hover:bg-red-300 cursor-pointer hover:text-black"
             onClick={() => setActiveMenu('help')}
           >
             <HelpCircle size={20} />
@@ -218,6 +227,7 @@ export default function AdminDashboard() {
           {activeMenu === 'regUsers' && <UserTable />}
           {activeMenu === 'showItems' && <ProductTable />}
           {activeMenu === 'heroImages' && <HeroManagement />}
+          {activeMenu === 'orders' && <OrderManagement />}
         </div>
       </div>
     </div>
