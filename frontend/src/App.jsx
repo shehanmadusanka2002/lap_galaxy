@@ -9,6 +9,7 @@ import UserRegister from './components/UserRegister.jsx';
 import Login from './components/Login.jsx';
 import ProductDetails from './components/ProductDetails.jsx';
 import Cart from './components/Cart.jsx';
+import Checkout from './components/Checkout.jsx';
 import ResetPassword from './components/ResetPassword.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 import DebugAuth from './components/DebugAuth.jsx';
@@ -37,6 +38,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/product/:id" element={<ProductDetails />} />
         <Route path="/cart" element={<Cart />} />
+        <Route path="/checkout" element={<Checkout />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/debug-auth" element={<DebugAuth />} />
       </Routes>

@@ -389,7 +389,21 @@ const Cart = () => {
                     </div>
 
                     <button
-                      onClick={() => selectedTotals.itemCount > 0 ? alert('Checkout functionality coming soon!') : alert('Please select at least one item')}
+                      onClick={() => {
+                        if (selectedTotals.itemCount === 0) {
+                          alert('Please select at least one item');
+                        } else {
+                          const selectedCartItems = cart.items.filter(item => selectedItems.has(item.id));
+                          navigate('/checkout', { 
+                            state: { 
+                              selectedItems: selectedCartItems,
+                              subtotal: selectedTotals.subtotal,
+                              shipping: selectedTotals.shipping,
+                              total: selectedTotals.total
+                            }
+                          });
+                        }
+                      }}
                       disabled={selectedTotals.itemCount === 0}
                       className="w-full py-3 sm:py-4 text-sm sm:text-base bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold rounded-lg hover:from-orange-600 hover:to-orange-700 transition shadow-lg flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
