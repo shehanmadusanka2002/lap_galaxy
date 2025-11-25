@@ -31,3 +31,19 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Environment Variables ###
+.env
+.env.local
+.env.production
+*.pem
+private_key.pem
+
+### Docker ###
+docker-compose.override.yml
+
+### Node ###
+node_modules/
+dist/
+.DS_Store
+
