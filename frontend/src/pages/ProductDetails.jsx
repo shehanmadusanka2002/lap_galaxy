@@ -7,8 +7,8 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cartAPI } from "../services/cartService";
-import NavBar from "./NavBar";
-import Footer from "./Footer";
+import NavBar from "../components/NavBar";
+import Footer from "../components/Footer";
 
 const ProductDetails = () => {
   const [product, setProduct] = useState(null);

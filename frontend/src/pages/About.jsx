@@ -1,8 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Award, Target, Eye, Users, Laptop, Shield, Zap, Heart, ArrowRight } from "lucide-react";
-import NavBar from "./NavBar";
-import Footer from "./Footer";
+import NavBar from "../components/NavBar";
+import Footer from "../components/Footer";
 
 const About = () => {
   const stats = [

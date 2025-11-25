@@ -4,8 +4,8 @@ import {
   ShoppingCart, Trash2, Plus, Minus, ArrowLeft, 
   ShoppingBag, Truck, CreditCard, AlertCircle 
 } from "lucide-react";
-import NavBar from "./NavBar";
-import Footer from "./Footer";
+import NavBar from "../components/NavBar";
+import Footer from "../components/Footer";
 import { cartAPI } from "../services/cartService";
 
 const Cart = () => {

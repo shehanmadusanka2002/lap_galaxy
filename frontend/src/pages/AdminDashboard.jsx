@@ -9,11 +9,11 @@ import {
 } from 'lucide-react';
 import { isAdmin, logout, getCurrentUser } from '../services/api';
 import { useNavigate } from 'react-router-dom';
-import ProductsCreate from './ProductsCreate';
-import UserTable from './UserTable';
-import ProductTable from './ProductTable';
-import HeroManagement from './HeroManagement';
-import OrderManagement from './OrderManagement';
+import ProductsCreate from '../components/ProductsCreate';
+import UserTable from '../components/UserTable';
+import ProductTable from '../components/ProductTable';
+import HeroManagement from '../components/HeroManagement';
+import OrderManagement from '../components/OrderManagement';
 
 
 // 🔹 Sample Monthly Laptop Sales Data

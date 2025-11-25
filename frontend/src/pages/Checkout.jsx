@@ -4,8 +4,8 @@ import {
   CreditCard, MapPin, User, Phone, Mail, Home, 
   ShoppingBag, Truck, Check, ArrowLeft, AlertCircle 
 } from 'lucide-react';
-import NavBar from './NavBar';
-import Footer from './Footer';
+import NavBar from '../components/NavBar';
+import Footer from '../components/Footer';
 import { orderAPI } from '../services/orderService';
 
 const Checkout = () => {

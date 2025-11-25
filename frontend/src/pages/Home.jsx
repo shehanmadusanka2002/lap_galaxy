@@ -2,9 +2,9 @@
 import { Search, ShoppingCart, Heart, ArrowLeft, ArrowRight, Star, ChevronDown, Menu, X, Home } from 'lucide-react';
 //import axios from 'axios';
 import ProductList from './ProductList';
-import NavBar from './NavBar';
-import Hero from './Hero'; // Adjust path if needed 
-import Footer from './Footer'; // Adjust path if needed
+import NavBar from '../components/NavBar';
+import Hero from '../components/Hero'; // Adjust path if needed 
+import Footer from '../components/Footer'; // Adjust path if needed
  // Adjust path if needed
 
 // Mock database data (this would come from your actual database)

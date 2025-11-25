@@ -1,21 +1,21 @@
 import React from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css'
-import AdminDashboard from './components/AdminDashboard.jsx'
+import AdminDashboard from './pages/AdminDashboard.jsx'
 import LapGalaxy from './components/LapGalaxy.jsx'
-import ProductList from './components/ProductList.jsx'
-import Home from './components/Home.jsx'
-import UserRegister from './components/UserRegister.jsx';
-import Login from './components/Login.jsx';
-import ProductDetails from './components/ProductDetails.jsx';
-import Cart from './components/Cart.jsx';
-import Checkout from './components/Checkout.jsx';
-import ResetPassword from './components/ResetPassword.jsx';
+import ProductList from './pages/ProductList.jsx'
+import Home from './pages/Home.jsx'
+import UserRegister from './pages/UserRegister.jsx';
+import Login from './pages/Login.jsx';
+import ProductDetails from './pages/ProductDetails.jsx';
+import Cart from './pages/Cart.jsx';
+import Checkout from './pages/Checkout.jsx';
+import ResetPassword from './pages/ResetPassword.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 import DebugAuth from './components/DebugAuth.jsx';
-import About from './components/About.jsx';
-import ContactUs from './components/ContactUs.jsx';
-import Blog from './components/Blog.jsx';
+import About from './pages/About.jsx';
+import ContactUs from './pages/ContactUs.jsx';
+import Blog from './pages/Blog.jsx';
 
 
 

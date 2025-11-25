@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Calendar, User, ArrowRight, Search, Tag, TrendingUp, Laptop, Code, Zap, Shield } from "lucide-react";
-import NavBar from "./NavBar";
-import Footer from "./Footer";
+import NavBar from "../components/NavBar";
+import Footer from "../components/Footer";
 
 const Blog = () => {
   const [searchQuery, setSearchQuery] = useState("");
