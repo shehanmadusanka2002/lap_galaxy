@@ -13,6 +13,7 @@ const Hero = () => {
   const navigate = useNavigate();
 
   // Fetch hero images from backend
+  // fetch the images
   useEffect(() => {
     axios.get(`${API_BASE_URL}/hero/active`)
       .then(response => {
