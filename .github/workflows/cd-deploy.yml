@@ -121,10 +121,13 @@ jobs:
       with:
         node-version: '20'
 
-    - name: Clean and Install Dependencies
+    - name: Install yarn
+      run: npm install -g yarn
+
+    - name: Install Dependencies with Yarn
       working-directory: ./frontend
       run: |
-        npm install --include=optional --legacy-peer-deps
+        yarn install --frozen-lockfile || yarn install
 
     - name: Build Frontend
       working-directory: ./frontend
