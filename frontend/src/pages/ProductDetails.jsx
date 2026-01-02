@@ -163,7 +163,15 @@ const ProductDetails = () => {
             <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
               <div className="relative bg-gray-50 dark:bg-gray-700 rounded-xl overflow-hidden aspect-square flex items-center justify-center mb-4">
                 <img
-                  src={product.imageUrl || product.imagePath || `data:${product.imageType};base64,${product.imageBase64}`}
+                  src={
+                    product.imageUrl 
+                      ? (product.imageUrl.startsWith('http') ? product.imageUrl : `http://16.170.168.84:32050${product.imageUrl}`)
+                      : product.imagePath 
+                      ? `http://16.170.168.84:32050${product.imagePath}`
+                      : product.imageBase64 
+                      ? `data:${product.imageType};base64,${product.imageBase64}` 
+                      : 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="400"%3E%3Crect fill="%23ddd" width="400" height="400"/%3E%3Ctext fill="%23999" font-family="sans-serif" font-size="30" dy="10.5" font-weight="bold" x="50%25" y="50%25" text-anchor="middle"%3ENo Image%3C/text%3E%3C/svg%3E'
+                  }
                   alt={product.name}
                   className="max-w-full max-h-full object-contain p-4"
                   onError={(e) => {

@@ -155,7 +155,15 @@ const ProductList = () => {
             {/* Image Container */}
             <div className="relative overflow-hidden rounded-t-xl">
               <img
-                src={product.imageUrl || product.imagePath || `data:${product.imageType};base64,${product.imageBase64}` || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="280" height="224"%3E%3Crect fill="%23ddd" width="280" height="224"/%3E%3Ctext fill="%23999" font-family="sans-serif" font-size="18" dy="10.5" font-weight="bold" x="50%25" y="50%25" text-anchor="middle"%3ENo Image%3C/text%3E%3C/svg%3E'}
+                src={
+                  product.imageUrl 
+                    ? (product.imageUrl.startsWith('http') ? product.imageUrl : `http://16.170.168.84:32050${product.imageUrl}`)
+                    : product.imagePath 
+                    ? `http://16.170.168.84:32050${product.imagePath}`
+                    : product.imageBase64 
+                    ? `data:${product.imageType};base64,${product.imageBase64}` 
+                    : 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="280" height="224"%3E%3Crect fill="%23ddd" width="280" height="224"/%3E%3Ctext fill="%23999" font-family="sans-serif" font-size="18" dy="10.5" font-weight="bold" x="50%25" y="50%25" text-anchor="middle"%3ENo Image%3C/text%3E%3C/svg%3E'
+                }
                 alt={product.name}
                 className="w-full h-56 object-cover group-hover:scale-110 transition-transform duration-500"
                 onError={(e) => {
