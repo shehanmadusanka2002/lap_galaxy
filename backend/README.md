@@ -4,6 +4,7 @@ A full-stack e-commerce platform built with Spring Boot and React, featuring sec
 
 ## 🚀 Features
 
+
 - **JWT Authentication** - Secure token-based authentication
 - **Role-Based Access Control** - USER and ADMIN roles
 - **Product Management** - CRUD operations for products
