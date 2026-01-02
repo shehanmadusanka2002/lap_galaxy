@@ -58,7 +58,7 @@ jobs:
 
     - name: Install Frontend Dependencies
       working-directory: ./frontend
-      run: npm ci
+      run: npm install
 
     - name: Run Frontend Lint
       working-directory: ./frontend
@@ -125,10 +125,7 @@ jobs:
 
     - name: Install Dependencies
       working-directory: ./frontend
-      run: |
-        rm -rf node_modules package-lock.json
-        npm install
-        npm ci
+      run: npm install
 
     - name: Build Frontend
       working-directory: ./frontend
