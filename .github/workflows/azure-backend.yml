@@ -1,0 +1,62 @@
+name: Deploy Backend to Azure Container Apps
+
+on:
+  push:
+    branches: [ "main" ]
+    paths: [ 'backend/**' ]
+  workflow_dispatch:
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: maven
+
+    - name: Build with Maven
+      working-directory: ./backend
+      run: mvn clean package -DskipTests
+
+    - name: Login to Azure
+      uses: azure/login@v2
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Login to Azure Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ secrets.AZURE_REGISTRY_LOGIN_SERVER }}
+        username: ${{ secrets.AZURE_REGISTRY_USERNAME }}
+        password: ${{ secrets.AZURE_REGISTRY_PASSWORD }}
+
+    - name: Build and Push Docker Image to ACR
+      working-directory: ./backend
+      run: |
+        docker build -t ${{ secrets.AZURE_REGISTRY_LOGIN_SERVER }}/lapgalaxy-backend:${{ github.sha }} .
+        docker build -t ${{ secrets.AZURE_REGISTRY_LOGIN_SERVER }}/lapgalaxy-backend:latest .
+        docker push ${{ secrets.AZURE_REGISTRY_LOGIN_SERVER }}/lapgalaxy-backend:${{ github.sha }}
+        docker push ${{ secrets.AZURE_REGISTRY_LOGIN_SERVER }}/lapgalaxy-backend:latest
+
+    - name: Deploy to Azure Container Apps
+      uses: azure/container-apps-deploy-action@v2
+      with:
+        imageToDeploy: ${{ secrets.AZURE_REGISTRY_LOGIN_SERVER }}/lapgalaxy-backend:${{ github.sha }}
+        targetPort: 8080
+        ingress: external
+        resourceGroup: ${{ secrets.AZURE_RESOURCE_GROUP }}
+        containerAppName: lapgalaxy-backend
+        containerAppEnvironment: lapgalaxy-env
+        location: eastus
+        environmentVariables: |
+          DB_URL=secretref:db-url
+          DB_USERNAME=secretref:db-username
+          DB_PASSWORD=secretref:db-password
+          JWT_SECRET=secretref:jwt-secret
