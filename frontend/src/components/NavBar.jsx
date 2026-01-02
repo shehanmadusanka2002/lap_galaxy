@@ -115,7 +115,8 @@ const NavBar = () => {
     
     try {
       // Using the findByBrandContainingIgnoreCase endpoint
-      const response = await fetch(`http://localhost:8080/api/product/search?brand=${encodeURIComponent(searchQuery)}`);    
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+      const response = await fetch(`${API_BASE_URL}/product/search?brand=${encodeURIComponent(searchQuery)}`);    
       if (response.ok) {
         const data = await response.json();
         setSearchResults(data);

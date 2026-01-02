@@ -3,6 +3,8 @@ import axios from 'axios';
 import { Package, Star, Truck, Tag, TrendingUp, AlertCircle, Edit, Trash2, Eye, Grid, List, Shield, Lock } from 'lucide-react';
 import { isAdmin } from '../services/api';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+
 const ProductList = () => {
   const [products, setProducts] = useState([]);
   const [editingProduct, setEditingProduct] = useState(null);
@@ -18,14 +20,19 @@ const ProductList = () => {
   }, [adminUser]);
 
   const fetchProducts = () => {
-    axios.get('http://localhost:8080/api/product/all')
+    axios.get(`${API_BASE_URL}/product/all`)
       .then(response => setProducts(response.data))
       .catch(error => console.error('Error fetching products:', error));
   };
 
   const handleDelete = (Id) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
-      axios.delete(`http://localhost:8080/api/product/delete/${Id}`)
+      const token = localStorage.getItem('token');
+      axios.delete(`${API_BASE_URL}/product/delete/${Id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
         .then(() => {
           alert('Product deleted successfully!');
           fetchProducts();
@@ -126,7 +133,7 @@ const ProductList = () => {
     // Get token from localStorage
     const token = localStorage.getItem('token');
 
-    axios.put(`http://localhost:8080/api/product/update-with-image/${editingProduct.id}`, formData, {
+    axios.put(`${API_BASE_URL}/product/update-with-image/${editingProduct.id}`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
         'Authorization': `Bearer ${token}`

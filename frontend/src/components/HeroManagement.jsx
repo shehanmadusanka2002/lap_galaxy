@@ -3,6 +3,8 @@ import axios from 'axios';
 import { Upload, Trash2, Eye, EyeOff, Edit2, Plus, Save, X } from 'lucide-react';
 import { isAdmin } from '../services/api';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+
 const HeroManagement = () => {
   const [heroImages, setHeroImages] = useState([]);
   const [showForm, setShowForm] = useState(false);
@@ -29,7 +31,7 @@ const HeroManagement = () => {
 
   const fetchHeroImages = () => {
     const token = localStorage.getItem('token');
-    axios.get('http://localhost:8080/api/hero/all', {
+    axios.get(`${API_BASE_URL}/hero/all`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
       .then(response => setHeroImages(response.data))
@@ -75,7 +77,7 @@ const HeroManagement = () => {
 
     try {
       if (editingId) {
-        await axios.put(`http://localhost:8080/api/hero/${editingId}`, data, {
+        await axios.put(`${API_BASE_URL}/hero/${editingId}`, data, {
           headers: {
             'Content-Type': 'multipart/form-data',
             'Authorization': `Bearer ${token}`
@@ -83,7 +85,7 @@ const HeroManagement = () => {
         });
         setMessage('Hero image updated successfully!');
       } else {
-        await axios.post('http://localhost:8080/api/hero/upload', data, {
+        await axios.post(`${API_BASE_URL}/hero/upload`, data, {
           headers: {
             'Content-Type': 'multipart/form-data',
             'Authorization': `Bearer ${token}`
@@ -121,7 +123,7 @@ const HeroManagement = () => {
     if (window.confirm('Are you sure you want to delete this hero image?')) {
       const token = localStorage.getItem('token');
       try {
-        await axios.delete(`http://localhost:8080/api/hero/${id}`, {
+        await axios.delete(`${API_BASE_URL}/hero/${id}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         setMessage('Hero image deleted successfully!');
@@ -137,7 +139,7 @@ const HeroManagement = () => {
   const toggleActive = async (id) => {
     const token = localStorage.getItem('token');
     try {
-      await axios.patch(`http://localhost:8080/api/hero/${id}/toggle`, {}, {
+      await axios.patch(`${API_BASE_URL}/hero/${id}/toggle`, {}, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       fetchHeroImages();

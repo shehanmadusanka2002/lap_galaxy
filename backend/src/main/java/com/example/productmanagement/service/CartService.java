@@ -298,11 +298,9 @@ public class CartService {
         dto.setQuantity(item.getQuantity());
         dto.setSubtotal(item.getSubtotal());
         dto.setStockQuantity(item.getProduct().getStockQuantity());
-        dto.setInStock(item.getProduct().getInStock());
         
-        // Add shipping information from product
-        dto.setShippingCost(item.getProduct().getShippingCost());
-        dto.setFreeShipping(item.getProduct().getFreeShipping() != null ? item.getProduct().getFreeShipping() : false);
+        // Calculate in stock based on stockQuantity
+        dto.setInStock(item.getProduct().getStockQuantity() > 0);
 
         return dto;
     }

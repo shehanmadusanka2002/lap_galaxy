@@ -3,6 +3,8 @@ import { ArrowLeft, ArrowRight, Sparkles, ShoppingBag } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+
 const Hero = () => {
   const [heroImages, setHeroImages] = useState([]);
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -12,7 +14,7 @@ const Hero = () => {
 
   // Fetch hero images from backend
   useEffect(() => {
-    axios.get('http://localhost:8080/api/hero/active')
+    axios.get(`${API_BASE_URL}/hero/active`)
       .then(response => {
         setHeroImages(response.data);
         setLoading(false);

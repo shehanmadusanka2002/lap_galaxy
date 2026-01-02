@@ -4,6 +4,8 @@ import { ArrowLeft, ArrowRight, Star, ShoppingCart, Eye, Heart, Truck, Award, Tr
 import { useNavigate } from 'react-router-dom';
 import { cartAPI } from '../services/cartService';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+
 const ProductList = () => {
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
@@ -12,10 +14,10 @@ const ProductList = () => {
   const scrollRef = useRef(null);
   const navigate = useNavigate();
 
-  const categories = ['All', 'Laptops', 'Desktops', 'Accessories', 'Components', 'Peripherals', 'Gaming'];
+  const categories = ['All', 'Laptops', 'Gaming', 'Business', 'Budget', 'Ultrabook', 'Accessories'];
 
   useEffect(() => {
-    axios.get('http://localhost:8080/api/product/all')
+    axios.get(`${API_BASE_URL}/product/all`)
       .then((response) => {
         setProducts(response.data);
         setFilteredProducts(response.data);
@@ -75,14 +77,16 @@ const ProductList = () => {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 sm:mb-8 gap-3">
         <div>
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-800 dark:text-white mb-1 sm:mb-2">
-            Explore Our Products
+            අපේ නිෂ්පාදන / Our Products
           </h1>
           <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
-            Discover amazing deals on premium laptops
+            Quality laptops at best prices • තත්ත්ව සහිත Laptops හොඳම මිලට
           </p>
         </div>
-        <div className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
-          <span className="font-semibold text-indigo-600">{filteredProducts.length}</span> Products Available
+        <div className="text-sm sm:text-base text-gray-600 dark:text-gray-400 flex items-center gap-2">
+          <Package size={18} className="text-indigo-600" />
+          <span className="font-semibold text-indigo-600">{filteredProducts.length}</span> 
+          <span>Available</span>
         </div>
       </div>
 
@@ -93,12 +97,19 @@ const ProductList = () => {
             <button
               key={category}
               onClick={() => setSelectedCategory(category)}
-              className={`px-4 sm:px-6 py-2 sm:py-2.5 rounded-full font-semibold text-sm sm:text-base transition-all duration-300 shadow-md ${
+              className={`px-4 sm:px-6 py-2 sm:py-2.5 rounded-full font-semibold text-sm sm:text-base transition-all duration-300 shadow-md hover:shadow-lg ${
                 selectedCategory === category
-                  ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white transform scale-105'
-                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-indigo-50 dark:hover:bg-gray-700'
+                  ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white transform scale-105'
+                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600'
               }`}
             >
+              {category === 'All' && '🏠 '}
+              {category === 'Laptops' && '💻 '}
+              {category === 'Gaming' && '🎮 '}
+              {category === 'Business' && '💼 '}
+              {category === 'Budget' && '💰 '}
+              {category === 'Ultrabook' && '⚡ '}
+              {category === 'Accessories' && '🎧 '}
               {category}
               {category !== 'All' && (
                 <span className="ml-2 text-xs bg-white dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded-full">
@@ -153,48 +164,31 @@ const ProductList = () => {
                 }}
               />
               
-              {/* Badges */}
-              <div className="absolute top-2 left-2 flex flex-col gap-1">
-                {product.discountPercentage > 0 && (
-                  <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-md shadow-md">
-                    -{product.discountPercentage}%
-                  </span>
-                )}
-                {product.featured && (
-                  <span className="bg-yellow-400 text-gray-900 text-xs font-bold px-2 py-1 rounded-md shadow-md flex items-center gap-1">
-                    <Award size={12} />
-                    Featured
-                  </span>
-                )}
-                {product.bestSeller && (
-                  <span className="bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded-md shadow-md flex items-center gap-1">
-                    <TrendingUp size={12} />
-                    Best Seller
-                  </span>
-                )}
-              </div>
-
-              {/* Free Shipping Badge */}
-              {product.freeShipping && (
-                <div className="absolute top-2 right-2">
-                  <span className="bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-md shadow-md flex items-center gap-1">
-                    <Truck size={12} />
-                    Free Ship
+              {/* Condition Badge - Simple */}
+              {product.condition && (
+                <div className="absolute top-2 left-2">
+                  <span className={`inline-block text-xs font-semibold px-3 py-1 rounded-full shadow-lg ${
+                    product.condition === 'NEW' 
+                      ? 'bg-green-500 text-white' 
+                      : product.condition === 'REFURBISHED'
+                      ? 'bg-orange-500 text-white'
+                      : 'bg-gray-500 text-white'
+                  }`}>
+                    {product.condition === 'NEW' ? '🆕 New' : 
+                     product.condition === 'REFURBISHED' ? '🔧 Refurbished' : 
+                     '📦 Used'}
                   </span>
                 </div>
               )}
 
-              {/* Wishlist Button */}
-              <button
-                onClick={() => toggleWishlist(product.id)}
-                className={`absolute bottom-2 right-2 p-2 rounded-full shadow-lg transition-all duration-300 ${
-                  wishlist.includes(product.id)
-                    ? 'bg-red-500 text-white'
-                    : 'bg-white text-gray-600 hover:bg-red-500 hover:text-white'
-                }`}
-              >
-                <Heart size={18} fill={wishlist.includes(product.id) ? 'currentColor' : 'none'} />
-              </button>
+              {/* Stock Status Badge */}
+              {!product.productAvailable && (
+                <div className="absolute top-2 right-2">
+                  <span className="bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+                    Out of Stock
+                  </span>
+                </div>
+              )}
 
               {/* Quick View Button */}
               <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center">
@@ -203,18 +197,21 @@ const ProductList = () => {
                   className="opacity-0 group-hover:opacity-100 bg-white text-gray-800 px-4 py-2 rounded-lg font-medium shadow-lg transform scale-90 group-hover:scale-100 transition-all duration-300 flex items-center gap-2"
                 >
                   <Eye size={18} />
-                  Quick View
+                  View Details
                 </button>
               </div>
             </div>
 
             {/* Product Info */}
-            <div className="p-4 space-y-2">
-              {/* Brand & Category */}
-              <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-                <span className="font-medium text-indigo-600">{product.brand}</span>
-                <span>•</span>
-                <span>{product.category}</span>
+            <div className="p-4 space-y-3">
+              {/* Brand */}
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-indigo-600 bg-indigo-50 dark:bg-indigo-900 dark:text-indigo-300 px-3 py-1 rounded-full">
+                  {product.brand}
+                </span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  {product.category}
+                </span>
               </div>
 
               {/* Product Name */}
@@ -226,101 +223,60 @@ const ProductList = () => {
                 {product.name}
               </h2>
 
-              {/* Rating */}
-              {product.rating && (
-                <div className="flex items-center gap-1">
-                  <div className="flex">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        size={14}
-                        className={i < Math.floor(product.rating) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}
-                      />
-                    ))}
-                  </div>
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
-                    {product.rating}
-                  </span>
-                  {product.reviewCount > 0 && (
-                    <span className="text-xs text-gray-500">
-                      ({product.reviewCount})
-                    </span>
-                  )}
+              {/* Description - Short */}
+              {product.description && (
+                <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2">
+                  {product.description}
+                </p>
+              )}
+
+              {/* Warranty */}
+              {product.warranty && (
+                <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+                  <Award size={14} className="text-blue-500" />
+                  <span>{product.warranty}</span>
                 </div>
               )}
 
-              {/* Price Section */}
-              <div className="pt-2">
-                {product.discountPercentage > 0 && product.originalPrice ? (
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-2xl font-bold text-orange-600">
-                        Rs. {product.price}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-gray-500 line-through">
-                        Rs. {product.originalPrice}
-                      </span>
-                      <span className="text-xs text-red-600 font-semibold bg-red-100 px-2 py-0.5 rounded">
-                        Save Rs. {(product.originalPrice - product.price).toFixed(2)}
-                      </span>
-                    </div>
-                  </div>
-                ) : (
-                  <span className="text-2xl font-bold text-orange-600">
-                    Rs. {product.price}
+              {/* Price Section - Simplified */}
+              <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                    Rs. {Number(product.price).toLocaleString()}
                   </span>
-                )}
+                </div>
               </div>
 
               {/* Stock Status */}
-              <div className="flex items-center gap-2 text-sm">
-                {product.inStock ? (
-                  <>
+              <div className="flex items-center justify-between text-sm">
+                {product.productAvailable && product.stockQuantity > 0 ? (
+                  <div className="flex items-center gap-2">
                     <Package size={16} className="text-green-600" />
-                    <span className="text-green-600 font-medium">In Stock</span>
-                    {product.stockQuantity && product.stockQuantity < 10 && (
-                      <span className="text-xs text-red-600">
-                        Only {product.stockQuantity} left!
-                      </span>
-                    )}
-                  </>
+                    <span className="text-green-600 font-medium">
+                      {product.stockQuantity} in stock
+                    </span>
+                  </div>
                 ) : (
-                  <>
+                  <div className="flex items-center gap-2">
                     <Package size={16} className="text-red-600" />
                     <span className="text-red-600 font-medium">Out of Stock</span>
-                  </>
+                  </div>
                 )}
               </div>
 
-              {/* Condition Badge */}
-              {product.condition && (
-                <div>
-                  <span className={`inline-block text-xs px-2 py-1 rounded ${
-                    product.condition === 'NEW' 
-                      ? 'bg-blue-100 text-blue-700' 
-                      : product.condition === 'REFURBISHED'
-                      ? 'bg-orange-100 text-orange-700'
-                      : 'bg-gray-100 text-gray-700'
-                  }`}>
-                    {product.condition}
-                  </span>
-                </div>
-              )}
-
               {/* Action Buttons */}
-              <div className="flex gap-2 pt-3">
+              <div className="flex gap-2 pt-2">
                 <button 
                   onClick={() => navigate(`/product/${product.id}`)}
-                  className="flex-1 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white py-2.5 px-3 rounded-lg text-sm font-medium transition-all duration-300 shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+                  className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-2.5 px-3 rounded-lg text-sm font-semibold transition-all duration-300 shadow-md hover:shadow-lg flex items-center justify-center gap-2"
                 >
                   <Eye size={16} />
-                  View Details
+                  විස්තර බලන්න
                 </button>
                 <button 
                   onClick={() => handleAddToCart(product.id, product.name)}
-                  className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white p-2.5 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg"
+                  disabled={!product.productAvailable || product.stockQuantity === 0}
+                  className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white p-2.5 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                   title="Add to Cart"
                 >
                   <ShoppingCart size={18} />
@@ -330,14 +286,24 @@ const ProductList = () => {
           </div>
         ))
         ) : (
-          <div className="col-span-full text-center py-12">
-            <Package size={64} className="mx-auto text-gray-400 mb-4" />
-            <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">
-              No products found in {selectedCategory}
-            </h3>
-            <p className="text-gray-500 dark:text-gray-400">
-              Try selecting a different category
-            </p>
+          <div className="col-span-full text-center py-16 px-4">
+            <div className="max-w-md mx-auto">
+              <Package size={80} className="mx-auto text-gray-300 mb-4" />
+              <h3 className="text-2xl font-bold text-gray-700 dark:text-gray-300 mb-2">
+                නිෂ්පාදන නැත / No Products Found
+              </h3>
+              <p className="text-gray-500 dark:text-gray-400 mb-4">
+                {selectedCategory === 'All' 
+                  ? 'No products available at the moment' 
+                  : `No products found in ${selectedCategory} category`}
+              </p>
+              <button
+                onClick={() => setSelectedCategory('All')}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg font-medium transition-all duration-300"
+              >
+                View All Categories
+              </button>
+            </div>
           </div>
         )}
       </div>

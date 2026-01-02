@@ -1,15 +1,17 @@
 package com.example.productmanagement.dto;
 
-import com.example.productmanagement.model.Product;
+import java.math.BigDecimal;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
-import jakarta.validation.constraints.*;
+
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.math.BigDecimal;
-import java.util.Base64;
-import java.util.Date;
 
 @Data
 @NoArgsConstructor
@@ -36,76 +38,23 @@ public class ProductDTO {
     @NotBlank(message = "Category is required")
     private String category;
 
-    private Date releaseDate;
-
     private boolean productAvailable;
 
     @Min(value = 0, message = "Stock quantity cannot be negative")
     private Integer stockQuantity;
 
-    // Image fields (file-based storage)
-    private String imagePath;  // Main image file path (e.g., "uploads/abc123.jpg")
-    private String imageUrl;   // Full URL to access the image (e.g., "http://localhost:8080/uploads/abc123.jpg")
-    
-    // Legacy fields for backward compatibility
-    private String imageName;
-    private String imageBase64;
-    private String imageType;
-
-    // ========== Industrial-Level E-commerce Fields ==========
-    
-    // Product Specifications
-    private String sku;
-    private String model;
     private String specifications;
+    
     private String warranty;
+    
     private String condition;
-    
-    // Pricing & Discounts
-    private BigDecimal originalPrice;
-    private Integer discountPercentage;
-    private BigDecimal shippingCost;
-    private Boolean freeShipping;
-    
-    // Product Details
-    private String color;
-    private String size;
-    private BigDecimal weight;
-    private String dimensions;
-    
-    // Seller & Origin
-    private String seller;
-    private String origin;
-    private String manufacturer;
-    
-    // Rating & Reviews
-    private BigDecimal rating;
-    private Integer reviewCount;
-    
-    // Stock Management
-    private Integer minOrderQuantity;
-    private Integer maxOrderQuantity;
-    private Boolean inStock;
-    private Boolean featured;
-    private Boolean bestSeller;
-    
-    // Tags & Keywords
-    private String tags;
-    private String keywords;
-    
-    // Additional Images
-    private String additionalImages;
-    
-    // Timestamps
-    private Date createdAt;
-    private Date updatedAt;
-    private String createdBy;
-    private String updatedBy;
-    
-    // Product Status
-    private String status;
 
-    public boolean getproductAvailable() {
+    // Image fields
+    private String imagePath;
+    private String imageUrl;
+
+    // Getter for boolean field following Java naming convention
+    public boolean isProductAvailable() {
         return productAvailable;
     }
 }

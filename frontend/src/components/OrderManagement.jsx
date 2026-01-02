@@ -7,6 +7,8 @@ import {
 } from 'lucide-react';
 import axios from 'axios';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+
 const OrderManagement = () => {
   const [orders, setOrders] = useState([]);
   const [filteredOrders, setFilteredOrders] = useState([]);
@@ -54,7 +56,7 @@ const OrderManagement = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:8080/api/orders', {
+      const response = await axios.get(`${API_BASE_URL}/orders`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setOrders(response.data);
@@ -91,7 +93,7 @@ const OrderManagement = () => {
       setUpdatingStatus(true);
       const token = localStorage.getItem('token');
       const response = await axios.patch(
-        `http://localhost:8080/api/orders/${orderId}/status`,
+        `${API_BASE_URL}/orders/${orderId}/status`,
         { status: newStatus },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -457,9 +459,15 @@ const OrderManagement = () => {
                       {selectedOrder.items.map((item) => (
                         <div key={item.id} className="flex gap-3 bg-white dark:bg-gray-800 p-3 rounded">
                           <img
-                            src={item.productImageUrl}
+                            src={item.productImageUrl ? 
+                              (item.productImageUrl.startsWith('http') ? item.productImageUrl : `http://localhost:8080${item.productImageUrl}`) 
+                              : 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%23ddd" width="100" height="100"/%3E%3Ctext fill="%23999" font-family="sans-serif" font-size="14" dy="10.5" font-weight="bold" x="50%25" y="50%25" text-anchor="middle"%3ENo Image%3C/text%3E%3C/svg%3E'}
                             alt={item.productName}
                             className="w-16 h-16 object-cover rounded"
+                            onError={(e) => {
+                              e.target.onerror = null;
+                              e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%23ddd" width="100" height="100"/%3E%3Ctext fill="%23999" font-family="sans-serif" font-size="14" dy="10.5" font-weight="bold" x="50%25" y="50%25" text-anchor="middle"%3ENo Image%3C/text%3E%3C/svg%3E';
+                            }}
                           />
                           <div className="flex-1">
                             <p className="font-medium text-sm text-gray-900 dark:text-white">{item.productName}</p>

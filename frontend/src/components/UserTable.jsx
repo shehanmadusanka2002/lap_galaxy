@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+
 const UserTable = () => {
   const [users, setUsers] = useState([]);
   const [message, setMessage] = useState("");
@@ -9,7 +11,7 @@ const UserTable = () => {
   const fetchUsers = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:8080/api/user/all", {
+      const res = await axios.get(`${API_BASE_URL}/user/all`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -37,7 +39,7 @@ const UserTable = () => {
 
     try {
       const token = localStorage.getItem("token");
-      await axios.delete(`http://localhost:8080/api/user/delete/${id}`, {
+      await axios.delete(`${API_BASE_URL}/user/delete/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -59,7 +61,7 @@ const UserTable = () => {
     try {
       const token = localStorage.getItem("token");
       await axios.put(
-        `http://localhost:8080/api/user/toggle-active/${id}`,
+        `${API_BASE_URL}/user/toggle-active/${id}`,
         {},
         {
           headers: {

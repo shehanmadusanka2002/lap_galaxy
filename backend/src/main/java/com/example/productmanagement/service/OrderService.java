@@ -1,23 +1,29 @@
 package com.example.productmanagement.service;
 
-import com.example.productmanagement.dto.CreateOrderRequest;
-import com.example.productmanagement.dto.OrderDTO;
-import com.example.productmanagement.dto.OrderItemDTO;
-import com.example.productmanagement.model.*;
-import com.example.productmanagement.repository.CartRepository;
-import com.example.productmanagement.repository.OrderRepository;
-import com.example.productmanagement.repository.ProductRepository;
-import com.example.productmanagement.repository.UserRepository;
-import jakarta.servlet.http.HttpServletRequest;
-import lombok.RequiredArgsConstructor;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
+import com.example.productmanagement.dto.CreateOrderRequest;
+import com.example.productmanagement.dto.OrderDTO;
+import com.example.productmanagement.dto.OrderItemDTO;
+import com.example.productmanagement.model.Cart;
+import com.example.productmanagement.model.Order;
+import com.example.productmanagement.model.OrderItem;
+import com.example.productmanagement.model.Product;
+import com.example.productmanagement.model.User;
+import com.example.productmanagement.repository.CartRepository;
+import com.example.productmanagement.repository.OrderRepository;
+import com.example.productmanagement.repository.ProductRepository;
+import com.example.productmanagement.repository.UserRepository;
+
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -73,13 +79,17 @@ public class OrderService {
             orderItem.setProductName(product.getName());
             orderItem.setQuantity(itemRequest.getQuantity());
             
-            // Calculate price at purchase - use price field (which is the discounted price if discount exists)
+            // Calculate price at purchase
             orderItem.setPriceAtPurchase(product.getPrice());
             orderItem.setSubtotal(orderItem.getPriceAtPurchase().multiply(
                     java.math.BigDecimal.valueOf(itemRequest.getQuantity())));
-            orderItem.setShippingCost(product.getShippingCost() != null ? 
-                    product.getShippingCost() : java.math.BigDecimal.ZERO);
-            orderItem.setProductImageUrl(product.getImagePath());
+            orderItem.setShippingCost(java.math.BigDecimal.ZERO); // Default shipping cost
+            
+            // Set product image URL with full path
+            if (product.getImagePath() != null && !product.getImagePath().isEmpty()) {
+                String imageUrl = "http://localhost:8080/" + product.getImagePath();
+                orderItem.setProductImageUrl(imageUrl);
+            }
 
             order.getOrderItems().add(orderItem);
         }
@@ -218,7 +228,17 @@ public class OrderService {
         dto.setPriceAtPurchase(item.getPriceAtPurchase());
         dto.setSubtotal(item.getSubtotal());
         dto.setShippingCost(item.getShippingCost());
-        dto.setProductImageUrl(item.getProductImageUrl());
+        
+        // Handle image URL - convert relative path to full URL if needed
+        String imageUrl = item.getProductImageUrl();
+        if (imageUrl != null && !imageUrl.isEmpty()) {
+            if (!imageUrl.startsWith("http")) {
+                // Old format: relative path like "/uploads/image.jpg" or "uploads/image.jpg"
+                imageUrl = "http://localhost:8080/" + (imageUrl.startsWith("/") ? imageUrl.substring(1) : imageUrl);
+            }
+            dto.setProductImageUrl(imageUrl);
+        }
+        
         return dto;
     }
 }

@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+
 const ResetPassword = () => {
   const [formData, setFormData] = useState({
     username: "",
@@ -20,7 +22,7 @@ const ResetPassword = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.put("http://localhost:8080/api/users/reset-password", formData);
+      const res = await axios.put(`${API_BASE_URL}/users/reset-password`, formData);
       setMessage("Password reset successful!",res);
       setTimeout(() => navigate("/login"), 2000);
     } catch (err) {
