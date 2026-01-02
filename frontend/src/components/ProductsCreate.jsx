@@ -79,7 +79,7 @@ function ProductCreate() {
       }
       
       // Use basic endpoint for simple product creation
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://16.170.168.84:32050/api';
       const endpoint = `${API_BASE_URL}/product/with-image`;
       
       // Get token from localStorage

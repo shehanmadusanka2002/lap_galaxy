@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Package, Star, Truck, Tag, TrendingUp, AlertCircle, Edit, Trash2, Eye, Grid, List, Shield, Lock } from 'lucide-react';
 import { isAdmin } from '../services/api';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://16.170.168.84:32050/api';
 
 const ProductList = () => {
   const [products, setProducts] = useState([]);

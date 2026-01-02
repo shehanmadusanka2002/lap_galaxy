@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://16.170.168.84:32050/api';
 
 const OrderManagement = () => {
   const [orders, setOrders] = useState([]);
@@ -460,7 +460,7 @@ const OrderManagement = () => {
                         <div key={item.id} className="flex gap-3 bg-white dark:bg-gray-800 p-3 rounded">
                           <img
                             src={item.productImageUrl ? 
-                              (item.productImageUrl.startsWith('http') ? item.productImageUrl : `http://localhost:8080${item.productImageUrl}`) 
+                              (item.productImageUrl.startsWith('http') ? item.productImageUrl : `http://16.170.168.84:32050${item.productImageUrl}`) 
                               : 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%23ddd" width="100" height="100"/%3E%3Ctext fill="%23999" font-family="sans-serif" font-size="14" dy="10.5" font-weight="bold" x="50%25" y="50%25" text-anchor="middle"%3ENo Image%3C/text%3E%3C/svg%3E'}
                             alt={item.productName}
                             className="w-16 h-16 object-cover rounded"

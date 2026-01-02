@@ -34,7 +34,7 @@ export default function LaptopProductPage() {
   // Simulating fetching data from database
   useEffect(() => {
     // In a real application, you would fetch data from your API here
-    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://16.170.168.84:32050/api';
     fetch(`${API_BASE_URL}/products`).then(res => res.json()).then(data => setLaptop(data))
     
     // Using mock data for demonstration

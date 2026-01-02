@@ -4,7 +4,7 @@ import { ArrowLeft, ArrowRight, Star, ShoppingCart, Eye, Heart, Truck, Award, Tr
 import { useNavigate } from 'react-router-dom';
 import { cartAPI } from '../services/cartService';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://16.170.168.84:32050/api';
 
 const ProductList = () => {
   const [products, setProducts] = useState([]);

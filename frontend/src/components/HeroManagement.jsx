@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Upload, Trash2, Eye, EyeOff, Edit2, Plus, Save, X } from 'lucide-react';
 import { isAdmin } from '../services/api';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://16.170.168.84:32050/api';
 
 const HeroManagement = () => {
   const [heroImages, setHeroImages] = useState([]);
