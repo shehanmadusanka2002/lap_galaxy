@@ -19,7 +19,11 @@ public class FileStorageConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/uploads/**")
-                .allowedOrigins("http://localhost:5173", "http://localhost:5174")
+                .allowedOrigins(
+                    "http://localhost:5173", 
+                    "http://localhost:5174",
+                    "http://16.170.168.84:30000"
+                )
                 .allowedMethods("GET")
                 .allowedHeaders("*")
                 .allowCredentials(false);

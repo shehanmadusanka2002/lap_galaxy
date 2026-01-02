@@ -90,6 +90,9 @@ jobs:
                       secretKeyRef:
                         name: app-secrets
                         key: jwt-secret
+                  volumeMounts:
+                  - name: uploads
+                    mountPath: /app/uploads
                   resources:
                     requests:
                       memory: "256Mi"
@@ -97,6 +100,11 @@ jobs:
                     limits:
                       memory: "512Mi"
                       cpu: "500m"
+                volumes:
+                - name: uploads
+                  hostPath:
+                    path: /var/lapgalaxy/uploads
+                    type: DirectoryOrCreate
           ---
           apiVersion: v1
           kind: Service
