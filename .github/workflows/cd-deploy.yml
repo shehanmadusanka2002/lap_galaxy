@@ -124,9 +124,7 @@ jobs:
     - name: Clean and Install Dependencies
       working-directory: ./frontend
       run: |
-        rm -rf node_modules package-lock.json
-        npm install --force
-        npm install @rollup/rollup-linux-x64-gnu --save-optional
+        npm install --include=optional --legacy-peer-deps
 
     - name: Build Frontend
       working-directory: ./frontend
