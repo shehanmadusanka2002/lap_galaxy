@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +29,9 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class OrderService {
+
+    @Value("${app.base-url}")
+    private String baseUrl;
 
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
@@ -87,7 +91,7 @@ public class OrderService {
             
             // Set product image URL with full path
             if (product.getImagePath() != null && !product.getImagePath().isEmpty()) {
-                String imageUrl = "http://localhost:8080/" + product.getImagePath();
+                String imageUrl = baseUrl + "/" + product.getImagePath();
                 orderItem.setProductImageUrl(imageUrl);
             }
 
@@ -234,7 +238,7 @@ public class OrderService {
         if (imageUrl != null && !imageUrl.isEmpty()) {
             if (!imageUrl.startsWith("http")) {
                 // Old format: relative path like "/uploads/image.jpg" or "uploads/image.jpg"
-                imageUrl = "http://localhost:8080/" + (imageUrl.startsWith("/") ? imageUrl.substring(1) : imageUrl);
+                imageUrl = baseUrl + "/" + (imageUrl.startsWith("/") ? imageUrl.substring(1) : imageUrl);
             }
             dto.setProductImageUrl(imageUrl);
         }

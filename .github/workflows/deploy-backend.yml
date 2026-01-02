@@ -90,6 +90,8 @@ jobs:
                       secretKeyRef:
                         name: app-secrets
                         key: jwt-secret
+                  - name: APP_BASE_URL
+                    value: "http://16.170.168.84:32050"
                   volumeMounts:
                   - name: uploads
                     mountPath: /app/uploads

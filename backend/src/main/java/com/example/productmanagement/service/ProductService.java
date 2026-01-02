@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -21,6 +22,9 @@ import com.example.productmanagement.repository.ProductRepository;
 
 @Service
 public class ProductService {
+
+    @Value("${app.base-url}")
+    private String baseUrl;
 
     @Autowired
     private ProductRepository productRepository;
@@ -51,7 +55,7 @@ public class ProductService {
         
         // Set imageUrl if imagePath exists
         if (product.getImagePath() != null && !product.getImagePath().isEmpty()) {
-            String imageUrl = "http://localhost:8080/" + product.getImagePath();
+            String imageUrl = baseUrl + "/" + product.getImagePath();
             dto.setImageUrl(imageUrl);
             dto.setImagePath(product.getImagePath());
         }
@@ -68,7 +72,7 @@ public class ProductService {
         return products.stream().map(product -> {
             ProductDTO dto = modelMapper.map(product, ProductDTO.class);
             if (product.getImagePath() != null && !product.getImagePath().isEmpty()) {
-                String imageUrl = "http://localhost:8080/" + product.getImagePath();
+                String imageUrl = baseUrl + "/" + product.getImagePath();
                 dto.setImageUrl(imageUrl);
                 dto.setImagePath(product.getImagePath());
             }
@@ -85,7 +89,7 @@ public class ProductService {
         return products.stream().map(product -> {
             ProductDTO dto = modelMapper.map(product, ProductDTO.class);
             if (product.getImagePath() != null && !product.getImagePath().isEmpty()) {
-                String imageUrl = "http://localhost:8080/" + product.getImagePath();
+                String imageUrl = baseUrl + "/" + product.getImagePath();
                 dto.setImageUrl(imageUrl);
                 dto.setImagePath(product.getImagePath());
             }
@@ -202,7 +206,7 @@ public class ProductService {
             // Set imageUrl if imagePath exists
             if (product.getImagePath() != null && !product.getImagePath().isEmpty()) {
                 // Convert relative path to full URL
-                String imageUrl = "http://localhost:8080/" + product.getImagePath();
+                String imageUrl = baseUrl + "/" + product.getImagePath();
                 dto.setImageUrl(imageUrl);
                 dto.setImagePath(product.getImagePath());
             }
