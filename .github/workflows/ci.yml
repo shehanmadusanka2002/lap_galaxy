@@ -71,8 +71,9 @@ jobs:
     - name: Install Dependencies
       working-directory: ./frontend
       run: |
-        rm -f package-lock.json
+        rm -rf node_modules package-lock.json
         npm install
+        npm rebuild
 
     - name: Lint Code
       working-directory: ./frontend
