@@ -1,0 +1,103 @@
+name: Deploy Frontend to AWS K3s
+
+on:
+  push:
+    branches: [ "main" ]
+    paths: [ 'frontend/**' ]
+  workflow_dispatch:
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Install Dependencies
+      working-directory: ./frontend
+      run: |
+        rm -rf node_modules package-lock.json
+        npm install
+        npm rebuild
+
+    - name: Build Frontend
+      working-directory: ./frontend
+      env:
+        VITE_API_BASE_URL: http://${{ secrets.EC2_HOST }}:32050/api
+      run: npm run build
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Build and Push Docker Image
+      working-directory: ./frontend
+      run: |
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/lapgalaxy-frontend:${{ github.sha }} .
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/lapgalaxy-frontend:latest .
+        docker push ${{ secrets.DOCKER_USERNAME }}/lapgalaxy-frontend:${{ github.sha }}
+        docker push ${{ secrets.DOCKER_USERNAME }}/lapgalaxy-frontend:latest
+
+    - name: Deploy to AWS EC2 (K3s)
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ubuntu
+        key: ${{ secrets.EC2_SSH_KEY }}
+        script: |
+          export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+          
+          cat <<EOF > /tmp/frontend.yaml
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: frontend-deployment
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
+                app: frontend
+            template:
+              metadata:
+                labels:
+                  app: frontend
+              spec:
+                containers:
+                - name: frontend
+                  image: ${{ secrets.DOCKER_USERNAME }}/lapgalaxy-frontend:${{ github.sha }}
+                  imagePullPolicy: Always
+                  ports:
+                  - containerPort: 80
+                  resources:
+                    requests:
+                      memory: "64Mi"
+                      cpu: "100m"
+                    limits:
+                      memory: "128Mi"
+                      cpu: "200m"
+          ---
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: frontend-service
+          spec:
+            type: NodePort
+            selector:
+              app: frontend
+            ports:
+            - port: 80
+              targetPort: 80
+              nodePort: 30000
+          EOF
+          
+          kubectl apply -f /tmp/frontend.yaml
+          kubectl rollout restart deployment/frontend-deployment
+          kubectl rollout status deployment/frontend-deployment --timeout=120s

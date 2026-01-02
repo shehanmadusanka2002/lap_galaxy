@@ -1,0 +1,117 @@
+name: Deploy Backend to AWS K3s
+
+on:
+  push:
+    branches: [ "main" ]
+    paths: [ 'backend/**' ]
+  workflow_dispatch:
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: maven
+
+    - name: Build with Maven
+      working-directory: ./backend
+      run: mvn clean package -DskipTests
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Build and Push Docker Image
+      working-directory: ./backend
+      run: |
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/lapgalaxy-backend:${{ github.sha }} .
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/lapgalaxy-backend:latest .
+        docker push ${{ secrets.DOCKER_USERNAME }}/lapgalaxy-backend:${{ github.sha }}
+        docker push ${{ secrets.DOCKER_USERNAME }}/lapgalaxy-backend:latest
+
+    - name: Deploy to AWS EC2 (K3s)
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ubuntu
+        key: ${{ secrets.EC2_SSH_KEY }}
+        script: |
+          export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+          
+          cat <<EOF > /tmp/backend.yaml
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: backend-deployment
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
+                app: backend
+            template:
+              metadata:
+                labels:
+                  app: backend
+              spec:
+                containers:
+                - name: backend
+                  image: ${{ secrets.DOCKER_USERNAME }}/lapgalaxy-backend:${{ github.sha }}
+                  imagePullPolicy: Always
+                  ports:
+                  - containerPort: 8080
+                  env:
+                  - name: DB_URL
+                    valueFrom:
+                      secretKeyRef:
+                        name: db-secrets
+                        key: url
+                  - name: DB_USERNAME
+                    valueFrom:
+                      secretKeyRef:
+                        name: db-secrets
+                        key: username
+                  - name: DB_PASSWORD
+                    valueFrom:
+                      secretKeyRef:
+                        name: db-secrets
+                        key: password
+                  - name: JWT_SECRET
+                    valueFrom:
+                      secretKeyRef:
+                        name: app-secrets
+                        key: jwt-secret
+                  resources:
+                    requests:
+                      memory: "256Mi"
+                      cpu: "250m"
+                    limits:
+                      memory: "512Mi"
+                      cpu: "500m"
+          ---
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: backend-service
+          spec:
+            type: NodePort
+            selector:
+              app: backend
+            ports:
+            - port: 8080
+              targetPort: 8080
+              nodePort: 32050
+          EOF
+          
+          kubectl apply -f /tmp/backend.yaml
+          kubectl rollout restart deployment/backend-deployment
+          kubectl rollout status deployment/backend-deployment --timeout=120s
