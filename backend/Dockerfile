@@ -9,10 +9,5 @@ COPY target/*.jar app.jar
 # Expose port
 EXPOSE 8080
 
-# Set environment variables (override in docker-compose)
-ENV SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/lapGalaxy?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-ENV SPRING_DATASOURCE_USERNAME=root
-ENV SPRING_DATASOURCE_PASSWORD=1234
-
 # Run the application
 ENTRYPOINT ["java", "-jar", "app.jar"]
