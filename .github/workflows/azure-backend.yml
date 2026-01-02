@@ -25,14 +25,13 @@ jobs:
       working-directory: ./backend
       run: mvn clean package -DskipTests
 
-    # --- වෙනස් වුන කොටස 1: Docker Hub එකට Login වීම ---
+    # --- මෙන්න මේ කොටස තමයි ඔයාගේ DOCKER Secrets පාවිච්චි කරන්නේ ---
     - name: Login to Docker Hub
       uses: docker/login-action@v3
       with:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
 
-    # --- වෙනස් වුන කොටස 2: Docker Hub එකට Image එක Push කිරීම ---
     - name: Build and Push Docker Image to Docker Hub
       working-directory: ./backend
       run: |
@@ -41,24 +40,19 @@ jobs:
         docker push ${{ secrets.DOCKER_USERNAME }}/lapgalaxy-backend:${{ github.sha }}
         docker push ${{ secrets.DOCKER_USERNAME }}/lapgalaxy-backend:latest
 
-    # --- Azure Login (Deploy කරන්න විතරක් ඕන) ---
     - name: Login to Azure
       uses: azure/login@v2
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    # --- වෙනස් වුන කොටස 3: Deploy කිරීම (Image එක ගන්නේ Docker Hub එකෙන්) ---
     - name: Deploy to Azure Container Apps
       uses: azure/container-apps-deploy-action@v2
       with:
         imageToDeploy: ${{ secrets.DOCKER_USERNAME }}/lapgalaxy-backend:${{ github.sha }}
         targetPort: 8080
         ingress: external
-        # කලින් හරියටම හැදුන Resource Group එකේ නම Secret එකට දාන්න
         resourceGroup: ${{ secrets.AZURE_RESOURCE_GROUP }} 
         containerAppName: lapgalaxy-backend
-        # location එක ඕන නම් විතරක් දාන්න, නැත්නම් Auto ගනීවි
-        # location: australiaeast 
         environmentVariables: |
           DB_URL=secretref:db-url
           DB_USERNAME=secretref:db-username
