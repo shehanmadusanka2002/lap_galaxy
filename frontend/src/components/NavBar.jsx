@@ -47,6 +47,7 @@ const NavBar = () => {
   ];
 
   // Fetch cart count
+  // fetch
   const fetchCartCount = async () => {
     try {
       const cartData = await cartAPI.getCart();
